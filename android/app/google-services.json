@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1066096605461",
+    "project_id": "aquabalance-tool",
+    "storage_bucket": "aquabalance-tool.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1066096605461:android:5f814b83fbd8050dc7111c",
+        "android_client_info": {
+          "package_name": "com.o2tech.aquabalance"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmHhGwISSuoIiMoDHoBnbXgR0bX8b01cw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
