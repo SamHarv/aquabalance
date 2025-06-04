@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_ai/firebase_ai.dart';
+import 'firebase_options.dart';
 
 import 'config/constants.dart';
 import 'ui/views/home_view.dart';
@@ -9,6 +12,7 @@ import 'ui/views/home_view.dart';
 
 /// [main] function is entry point of the app
 void main() async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const WaterTankInsights());
 }
 

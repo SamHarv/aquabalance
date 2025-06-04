@@ -8,6 +8,7 @@ import '/logic/results_calculator.dart';
 import '/ui/views/home_view.dart';
 import '/ui/widgets/constrained_width_widget.dart';
 import '/config/constants.dart';
+import 'optimisation_tips_view.dart';
 
 // TODO: Apply formatter.format() to this
 
@@ -746,7 +747,15 @@ class _OutputViewState extends State<OutputView> {
                                 setState(() {
                                   optimisationIsPressed = false;
                                 });
-                                await UrlLauncher.launchOptimisationTips();
+                                // nav to optimisation tips view
+                                await Navigator.push(
+                                  // ignore: use_build_context_synchronously
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const OptimisationTipsView(),
+                                  ),
+                                );
                               });
                             },
                             child: AnimatedContainer(
