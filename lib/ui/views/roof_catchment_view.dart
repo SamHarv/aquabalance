@@ -41,8 +41,8 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
   // Load saved data from SharedPreferences
   Future<void> _loadSavedData() async {
     try {
-      final roofCatchmentData =
-          await _dataPersistService.loadRoofCatchmentData();
+      final roofCatchmentData = await _dataPersistService
+          .loadRoofCatchmentData();
 
       setState(() {
         // Load boolean state
@@ -130,20 +130,19 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
   void _showAlertDialog(String message) {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: kBorderRadius,
-              side: kBorderSide,
-            ),
-            title: Text(message, style: subHeadingStyle),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text("OK", style: TextStyle(color: black)),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: kBorderRadius,
+          side: kBorderSide,
+        ),
+        title: Text(message, style: subHeadingStyle),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("OK", style: TextStyle(color: black)),
           ),
+        ],
+      ),
     );
   }
 
@@ -184,9 +183,80 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
                 ),
                 // Know catchment area?
                 ConstrainedWidthWidget(
-                  child: Text(
-                    "Enter your roof catchment area plumbed into tanks:",
-                    style: inputFieldStyle,
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          "Enter your roof catchment area plumbed into tanks:",
+                          style: inputFieldStyle,
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: "Learn to measure roof catchment area",
+                        color: white,
+                        onPressed: () {
+                          // Show information dialog
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: kBorderRadius,
+                                side: kBorderSide,
+                              ),
+                              title: Text(
+                                'How to Measure Roof Catchment Area',
+                                style: subHeadingStyle,
+                              ),
+                              content: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '1. Measure the length and width of your roof in metres',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '2. Multiply length x width = area in m²',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '3. For complex roofs, break into rectangles and add areas together',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '4. Only include areas that drain into your tank system',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                    SizedBox(height: 16),
+                                    Text(
+                                      'Example: 10m x 8m roof = 80m² catchment area',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text(
+                                    "Got it!",
+                                    style: TextStyle(color: black),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        icon: Icon(Icons.help),
+                      ),
+                    ],
                   ),
                 ),
 
@@ -195,6 +265,7 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
                   child: InputFieldWidget(
                     label: "Catchment Area (m²)",
                     controller: roofCatchmentController,
+                    floatingLabel: false,
                     onChanged: (value) {
                       // Validate inputs
                       if (roofCatchmentController.text.isNotEmpty) {
@@ -213,123 +284,135 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
                     },
                   ),
                 ),
-                Tooltip(
-                  message: "Learn to measure roof catchment area",
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 500),
-                    child: InkWell(
-                      borderRadius: kBorderRadius,
-                      onTap: () {
-                        // Handle button press animation
-                        setState(() {
-                          learnToMeasureIsPressed = true;
-                        });
-                        Future.delayed(const Duration(milliseconds: 150)).then((
-                          value,
-                        ) {
-                          setState(() {
-                            learnToMeasureIsPressed = false;
-                          });
-                        });
+                // Tooltip(
+                //   message: "Learn to measure roof catchment area",
+                //   child: ConstrainedBox(
+                //     constraints: BoxConstraints(maxWidth: 500),
+                //     child: InkWell(
+                //       borderRadius: kBorderRadius,
+                //       onTap: () {
+                //         // Handle button press animation
+                //         setState(() {
+                //           learnToMeasureIsPressed = true;
+                //         });
+                //         Future.delayed(const Duration(milliseconds: 150)).then((
+                //           value,
+                //         ) {
+                //           setState(() {
+                //             learnToMeasureIsPressed = false;
+                //           });
+                //         });
 
-                        // TODO: Add instructional video to measure roof catchment on Maps?
+                //         // TODO: Add instructional video to measure roof catchment on Maps?
 
-                        // Show information dialog
-                        showDialog(
-                          context: context,
-                          builder:
-                              (context) => AlertDialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: kBorderRadius,
-                                  side: kBorderSide,
-                                ),
-                                title: Text(
-                                  'How to Measure Roof Catchment Area',
-                                  style: subHeadingStyle,
-                                ),
-                                content: SingleChildScrollView(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '1. Measure the length and width of your roof in metres',
-                                        style: TextStyle(fontSize: 14),
-                                      ),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        '2. Multiply length x width = area in m²',
-                                        style: TextStyle(fontSize: 14),
-                                      ),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        '3. For complex roofs, break into rectangles and add areas together',
-                                        style: TextStyle(fontSize: 14),
-                                      ),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        '4. Only include areas that drain into your tank system',
-                                        style: TextStyle(fontSize: 14),
-                                      ),
-                                      SizedBox(height: 16),
-                                      Text(
-                                        'Example: 10m x 8m roof = 80m² catchment area',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed:
-                                        () => Navigator.of(context).pop(),
-                                    child: const Text(
-                                      "Got it!",
-                                      style: TextStyle(color: black),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                        );
-                      },
-                      child: AnimatedContainer(
-                        width: mediaWidth * 0.8,
-                        duration: const Duration(milliseconds: 100),
-                        decoration: BoxDecoration(
-                          color: white,
-                          border: Border.all(color: black, width: 3),
-                          borderRadius: kBorderRadius,
-                          boxShadow: [
-                            learnToMeasureIsPressed ? BoxShadow() : kShadow,
-                          ],
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Center(
-                            child: Text(
-                              "Learn how to measure",
-                              style: subHeadingStyle,
-                            ),
-                          ),
+                //         // Show information dialog
+                //         showDialog(
+                //           context: context,
+                //           builder: (context) => AlertDialog(
+                //             shape: RoundedRectangleBorder(
+                //               borderRadius: kBorderRadius,
+                //               side: kBorderSide,
+                //             ),
+                //             title: Text(
+                //               'How to Measure Roof Catchment Area',
+                //               style: subHeadingStyle,
+                //             ),
+                //             content: SingleChildScrollView(
+                //               child: Column(
+                //                 mainAxisSize: MainAxisSize.min,
+                //                 crossAxisAlignment: CrossAxisAlignment.start,
+                //                 children: [
+                //                   Text(
+                //                     '1. Measure the length and width of your roof in metres',
+                //                     style: TextStyle(fontSize: 14),
+                //                   ),
+                //                   SizedBox(height: 8),
+                //                   Text(
+                //                     '2. Multiply length x width = area in m²',
+                //                     style: TextStyle(fontSize: 14),
+                //                   ),
+                //                   SizedBox(height: 8),
+                //                   Text(
+                //                     '3. For complex roofs, break into rectangles and add areas together',
+                //                     style: TextStyle(fontSize: 14),
+                //                   ),
+                //                   SizedBox(height: 8),
+                //                   Text(
+                //                     '4. Only include areas that drain into your tank system',
+                //                     style: TextStyle(fontSize: 14),
+                //                   ),
+                //                   SizedBox(height: 16),
+                //                   Text(
+                //                     'Example: 10m x 8m roof = 80m² catchment area',
+                //                     style: TextStyle(
+                //                       fontSize: 14,
+                //                       fontWeight: FontWeight.bold,
+                //                     ),
+                //                   ),
+                //                 ],
+                //               ),
+                //             ),
+                //             actions: [
+                //               TextButton(
+                //                 onPressed: () => Navigator.of(context).pop(),
+                //                 child: const Text(
+                //                   "Got it!",
+                //                   style: TextStyle(color: black),
+                //                 ),
+                //               ),
+                //             ],
+                //           ),
+                //         );
+                //       },
+                //       child: AnimatedContainer(
+                //         width: mediaWidth * 0.8,
+                //         duration: const Duration(milliseconds: 100),
+                //         decoration: BoxDecoration(
+                //           color: white,
+                //           border: Border.all(color: black, width: 3),
+                //           borderRadius: kBorderRadius,
+                //           boxShadow: [
+                //             learnToMeasureIsPressed ? BoxShadow() : kShadow,
+                //           ],
+                //         ),
+                //         child: Padding(
+                //           padding: EdgeInsets.all(16),
+                //           child: Center(
+                //             child: Text(
+                //               "Learn how to measure",
+                //               style: subHeadingStyle,
+                //             ),
+                //           ),
+                //         ),
+                //       ),
+                //     ),
+                //   ),
+                // ),
+                ConstrainedWidthWidget(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Other water intake:", style: inputFieldStyle),
+                      IconButton(
+                        icon: Icon(Icons.help, color: white),
+                        tooltip: "Learn what other water intake is",
+                        onPressed: () => _showAlertDialog(
+                          "Other intake may be water your household receives "
+                          "through means such as bores or community supply.\n\n"
+                          "Bores are created by drilling wells into the ground "
+                          "and collecting water from the surface.\n\n"
+                          "Community supply is water that is collected from "
+                          "public water sources, such as municipal water "
+                          "supplies or water from a local water company.",
                         ),
                       ),
-                    ),
-                  ),
-                ),
-                ConstrainedWidthWidget(
-                  child: Text(
-                    "Record any water intake from other sources such as bores "
-                    "or community supply:",
-                    style: inputFieldStyle,
+                    ],
                   ),
                 ),
                 ConstrainedWidthWidget(
                   child: InputFieldWidget(
                     label: "Other Intake (L/day)",
+                    floatingLabel: false,
                     controller: otherIntakeController,
                     onChanged: (value) {
                       // Validate inputs

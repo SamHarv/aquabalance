@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import '../config/constants.dart';
 import '../data/database/database_service.dart';
 import '../../logic/services/data_persist_service.dart';
 
@@ -210,8 +211,8 @@ class ResultsCalculator {
     String scenario,
   ) async {
     try {
-      final roofCatchmentData =
-          await _dataPersistService.loadRoofCatchmentData();
+      final roofCatchmentData = await _dataPersistService
+          .loadRoofCatchmentData();
 
       final roofCatchmentArea =
           double.tryParse(roofCatchmentData['roofCatchmentArea']) ?? 100.0;
@@ -260,8 +261,8 @@ class ResultsCalculator {
       return monthlyIntake;
     } catch (e) {
       // Return minimal intake from other sources only
-      final roofCatchmentData =
-          await _dataPersistService.loadRoofCatchmentData();
+      final roofCatchmentData = await _dataPersistService
+          .loadRoofCatchmentData();
       final otherIntakeDailyL =
           double.tryParse(roofCatchmentData['otherIntake']) ?? 0.0;
 
@@ -358,8 +359,11 @@ class ResultsCalculator {
 
     // Get current month's daily intake (monthly / days in month)
     final currentMonthName = monthNames[currentMonth - 1];
-    final daysInCurrentMonth =
-        DateTime(DateTime.now().year, currentMonth + 1, 0).day;
+    final daysInCurrentMonth = DateTime(
+      DateTime.now().year,
+      currentMonth + 1,
+      0,
+    ).day;
     final dailyIntake = monthlyIntake[currentMonthName]! / daysInCurrentMonth;
 
     // Calculate net daily change (intake - usage)
@@ -374,7 +378,7 @@ class ResultsCalculator {
       daysRemaining = -1; // Infinite
       isIncreasing = true;
       message =
-          "You are gaining ${netDailyChange.toStringAsFixed(1)} litres per day!";
+          "You are gaining ${formatter.format(netDailyChange)} litres per day!";
     } else {
       // Water level is decreasing
       if (currentInventory <= 0) {
@@ -382,8 +386,9 @@ class ResultsCalculator {
         message = "Tank is empty - immediate action required!";
       } else {
         daysRemaining = (currentInventory / netDailyChange.abs()).floor();
+
         message =
-            "You are using ${netDailyChange.abs().toStringAsFixed(1)} litres more than you're collecting per day.";
+            "You are using ${formatter.format(netDailyChange.abs())} litres more than you're collecting per day.";
       }
     }
 
@@ -438,8 +443,11 @@ class ResultsCalculator {
       final projectedDate = startDate.add(Duration(days: day));
       final monthIndex = projectedDate.month - 1;
       final monthName = monthNames[monthIndex];
-      final daysInMonth =
-          DateTime(projectedDate.year, projectedDate.month + 1, 0).day;
+      final daysInMonth = DateTime(
+        projectedDate.year,
+        projectedDate.month + 1,
+        0,
+      ).day;
 
       // Calculate daily intake for this month
       final dailyIntake = monthlyIntake[monthName]! / daysInMonth;
@@ -499,8 +507,9 @@ class ResultsCalculator {
       }
 
       final availableSpace = totalCapacity - totalInventory;
-      final fillPercentage =
-          totalCapacity > 0 ? (totalInventory / totalCapacity) * 100 : 0.0;
+      final fillPercentage = totalCapacity > 0
+          ? (totalInventory / totalCapacity) * 100
+          : 0.0;
 
       return {
         'totalCapacity': totalCapacity,

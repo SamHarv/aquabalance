@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '/logic/services/data_persist_service.dart';
-import '/logic/services/url_launcher.dart';
 import '/ui/widgets/constrained_width_widget.dart';
 import '/ui/widgets/input_field_widget.dart';
 import '/config/constants.dart';
@@ -57,8 +56,9 @@ class _WaterUsageViewState extends State<WaterUsageView> {
 
       setState(() {
         numOfPeople = savedNumOfPeople;
-        numOfPeopleController.text =
-            numOfPeople > 0 ? numOfPeople.toString() : '';
+        numOfPeopleController.text = numOfPeople > 0
+            ? numOfPeople.toString()
+            : '';
         isLoading = false;
       });
 
@@ -95,8 +95,9 @@ class _WaterUsageViewState extends State<WaterUsageView> {
       personWaterUsageList.add(usage);
 
       // Use saved manual input preference or default to false
-      final isManual =
-          i < savedManualInputList.length ? savedManualInputList[i] : false;
+      final isManual = i < savedManualInputList.length
+          ? savedManualInputList[i]
+          : false;
       isManualInputList.add(isManual);
 
       // Create controller and set initial value if manual input
@@ -253,22 +254,21 @@ class _WaterUsageViewState extends State<WaterUsageView> {
   void showAlertDialog(String message) {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: kBorderRadius,
-              side: kBorderSide,
-            ),
-            title: Text(message, style: subHeadingStyle),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text("Close", style: TextStyle(color: black)),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: kBorderRadius,
+          side: kBorderSide,
+        ),
+        title: Text(message, style: subHeadingStyle),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text("Close", style: TextStyle(color: black)),
           ),
+        ],
+      ),
     );
   }
 
@@ -282,7 +282,7 @@ class _WaterUsageViewState extends State<WaterUsageView> {
       case 300:
         return "High (300L)";
       default:
-        return "Custom (${usage}L)";
+        return "Custom (${formatter.format(usage)}L)";
     }
   }
 
@@ -331,6 +331,7 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                 ),
                 ConstrainedWidthWidget(
                   child: InputFieldWidget(
+                    floatingLabel: false,
                     controller: numOfPeopleController,
                     label: "Number of people (1-20)",
                     onChanged: (number) {
@@ -439,7 +440,7 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                                     ],
                                     decoration: InputDecoration(
                                       labelText:
-                                          "Daily usage in litres (0-1500)",
+                                          "Daily usage in litres (0-1,500)",
                                       border: OutlineInputBorder(
                                         borderRadius: kBorderRadius,
                                       ),
@@ -449,9 +450,8 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                                         vertical: 12,
                                       ),
                                     ),
-                                    onChanged:
-                                        (value) =>
-                                            _handleManualInputChange(i, value),
+                                    onChanged: (value) =>
+                                        _handleManualInputChange(i, value),
                                   ),
                                 ] else ...[
                                   // Segmented button for preset values
@@ -538,17 +538,38 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                       ),
                       child: Column(
                         children: [
-                          Text(
-                            "Household Total",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: black,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(width: 40),
+                              Text(
+                                "Household Total",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: black,
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.warning_amber_outlined,
+                                  color: black,
+                                ),
+                                tooltip: "Disclaimer",
+                                onPressed: () => showAlertDialog(
+                                  "This tool uses calculations to estimate water "
+                                  "intake and usage, and may not reflect actual "
+                                  "measures. Results should not be relied "
+                                  "upon for critical decisions without "
+                                  "professional advice. Data entered into this app "
+                                  "will be stored on your device and kept private.",
+                                ),
+                              ),
+                            ],
                           ),
                           SizedBox(height: 8),
                           Text(
-                            "${_calculateTotalUsage()} litres per day",
+                            "${formatter.format(_calculateTotalUsage())} litres per day",
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -560,30 +581,6 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                     ),
                   ),
                 ],
-
-                // Link to website for more accurate estimates
-                // ConstrainedWidthWidget(
-                //   child: Row(
-                //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //     children: [
-                //       Text(
-                //         "For more accurate estimates:",
-                //         style: TextStyle(
-                //           fontSize: 16,
-                //           color: Colors.grey.shade600,
-                //           fontStyle: FontStyle.italic,
-                //         ),
-                //         textAlign: TextAlign.center,
-                //       ),
-                //       TextButton(
-                //         child: Text("click here"),
-                //         onPressed:
-                //             () async =>
-                //                 await UrlLauncher.launchWaterUsageTool(),
-                //       ),
-                //     ],
-                //   ),
-                // ),
 
                 // Button to continue
                 if (numOfPeople > 0)
@@ -611,89 +608,85 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                           // Show dialog with results that enables nav to output page
                           showDialog(
                             context: context,
-                            builder:
-                                (context) => AlertDialog(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: kBorderRadius,
-                                    side: kBorderSide,
-                                  ),
-                                  title: Text(
-                                    'Water Usage Results',
-                                    style: subHeadingStyle,
-                                  ),
-                                  content: SingleChildScrollView(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "Household Summary:",
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: black,
-                                          ),
-                                        ),
-                                        SizedBox(height: 8),
-                                        for (int i = 0; i < numOfPeople; i++)
-                                          if (i < personWaterUsageList.length)
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 2,
-                                                  ),
-                                              child: Text(
-                                                "Person ${i + 1}: ${personWaterUsageList[i]}L/day",
-                                                style: TextStyle(fontSize: 14),
-                                              ),
-                                            ),
-                                        Divider(),
-                                        Text(
-                                          "Total: $totalWaterUsage litres per day",
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.blue.shade800,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed:
-                                          () => Navigator.of(context).pop(),
-                                      child: const Text(
-                                        "Back",
-                                        style: TextStyle(color: black),
+                            builder: (context) => AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: kBorderRadius,
+                                side: kBorderSide,
+                              ),
+                              title: Text(
+                                'Water Usage Results',
+                                style: subHeadingStyle,
+                              ),
+                              content: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Household Summary:",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: black,
                                       ),
                                     ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-
-                                        // Save data before navigating
-                                        _saveData();
-
-                                        // nav to output view
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => OutputView(),
+                                    SizedBox(height: 8),
+                                    for (int i = 0; i < numOfPeople; i++)
+                                      if (i < personWaterUsageList.length)
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 2,
                                           ),
-                                        );
-                                      },
-                                      child: const Text(
-                                        "Continue",
-                                        style: TextStyle(
-                                          color: black,
-                                          fontWeight: FontWeight.bold,
+                                          child: Text(
+                                            "Person ${i + 1}: ${formatter.format(personWaterUsageList[i])}L/day",
+                                            style: TextStyle(fontSize: 14),
+                                          ),
                                         ),
+                                    Divider(),
+                                    Text(
+                                      "Total: ${formatter.format(totalWaterUsage)} litres per day",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blue.shade800,
                                       ),
                                     ),
                                   ],
                                 ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text(
+                                    "Back",
+                                    style: TextStyle(color: black),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+
+                                    // Save data before navigating
+                                    _saveData();
+
+                                    // nav to output view
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => OutputView(),
+                                      ),
+                                    );
+                                  },
+                                  child: const Text(
+                                    "Continue",
+                                    style: TextStyle(
+                                      color: black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           );
                         },
                         child: AnimatedContainer(

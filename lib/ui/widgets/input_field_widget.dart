@@ -8,12 +8,14 @@ class InputFieldWidget extends StatefulWidget {
   final TextEditingController controller;
   final String label;
   final ValueChanged<String> onChanged;
+  final bool floatingLabel;
 
   const InputFieldWidget({
     super.key,
     required this.controller,
     required this.label,
     required this.onChanged,
+    required this.floatingLabel,
   });
 
   @override
@@ -29,8 +31,12 @@ class _InputFieldWidgetState extends State<InputFieldWidget> {
       controller: widget.controller,
       onChanged: widget.onChanged, // on changed function can be called
       decoration: InputDecoration(
-        floatingLabelBehavior:
-            FloatingLabelBehavior.never, // Removed floating label
+        suffix: widget.floatingLabel
+            ? null
+            : Text(widget.label, style: inputFieldStyle),
+        floatingLabelBehavior: widget.floatingLabel
+            ? FloatingLabelBehavior.auto
+            : FloatingLabelBehavior.never, // Removed floating label
         border: inputBorder,
         enabledBorder: inputBorder,
         focusedBorder: inputBorder,

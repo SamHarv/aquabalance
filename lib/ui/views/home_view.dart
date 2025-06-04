@@ -1,3 +1,4 @@
+import 'package:aquabalance/ui/views/location_view.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/ui/widgets/constrained_width_widget.dart';
@@ -122,7 +123,7 @@ class _HomeViewState extends State<HomeView> {
                             // ignore: use_build_context_synchronously
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const DisclaimerView(),
+                              builder: (context) => const LocationView(),
                             ),
                           );
                         });

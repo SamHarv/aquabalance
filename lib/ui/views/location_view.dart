@@ -135,20 +135,19 @@ class _LocationViewState extends State<LocationView> {
   void _showAlertDialog(String message) {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: kBorderRadius,
-              side: kBorderSide,
-            ),
-            title: Text(message, style: subHeadingStyle),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text("OK", style: TextStyle(color: black)),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: kBorderRadius,
+          side: kBorderSide,
+        ),
+        title: Text(message, style: subHeadingStyle),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("OK", style: TextStyle(color: black)),
           ),
+        ],
+      ),
     );
   }
 
@@ -220,9 +219,8 @@ class _LocationViewState extends State<LocationView> {
                         filled: true,
                         fillColor: white,
                         labelStyle: inputFieldStyle,
-                        floatingLabelBehavior:
-                            FloatingLabelBehavior
-                                .never, // Removed floating label
+                        floatingLabelBehavior: FloatingLabelBehavior
+                            .never, // Removed floating label
                       ),
                       textStyle: inputFieldStyle,
                       enableFilter: true,

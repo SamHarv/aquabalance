@@ -52,20 +52,19 @@ class _OutputViewState extends State<OutputView> {
   void _showAlertDialog(String message) {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: kBorderRadius,
-              side: kBorderSide,
-            ),
-            title: Text(message, style: subHeadingStyle),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text("OK", style: TextStyle(color: black)),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: kBorderRadius,
+          side: kBorderSide,
+        ),
+        title: Text(message, style: subHeadingStyle),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("OK", style: TextStyle(color: black)),
           ),
+        ],
+      ),
     );
   }
 
@@ -192,13 +191,12 @@ class _OutputViewState extends State<OutputView> {
           maxY: maxY,
           lineBarsData: [
             LineChartBarData(
-              spots:
-                  projectedData.asMap().entries.map((entry) {
-                    return FlSpot(
-                      entry.key.toDouble(),
-                      entry.value['waterLevel'].toDouble(),
-                    );
-                  }).toList(),
+              spots: projectedData.asMap().entries.map((entry) {
+                return FlSpot(
+                  entry.key.toDouble(),
+                  entry.value['waterLevel'].toDouble(),
+                );
+              }).toList(),
               isCurved: true,
               gradient: LinearGradient(
                 colors: [blue, isIncreasing ? Colors.green : Colors.red],
@@ -262,14 +260,33 @@ class _OutputViewState extends State<OutputView> {
             ),
             child: Column(
               children: [
-                Icon(
-                  daysLeft == -1
-                      ? Icons.trending_up
-                      : !isIncreasing
-                      ? Icons.warning
-                      : Icons.check_circle,
-                  size: 40,
-                  color: !isIncreasing ? Colors.red : Colors.green,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(width: 40),
+                    Icon(
+                      daysLeft == -1
+                          ? Icons.trending_up
+                          : !isIncreasing
+                          ? Icons.warning
+                          : Icons.check_circle,
+                      size: 40,
+                      color: !isIncreasing ? Colors.red : Colors.green,
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.warning_amber_outlined, color: black),
+                      tooltip: "Disclaimer",
+                      onPressed: () => _showAlertDialog(
+                        "This tool "
+                        "uses calculations to estimate water "
+                        "intake and usage, and may not reflect actual "
+                        "measures. Results should not be relied "
+                        "upon for critical decisions without "
+                        "professional advice. Data entered into this app "
+                        "will be stored on your device and kept private.",
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 12),
                 Text(
@@ -279,10 +296,9 @@ class _OutputViewState extends State<OutputView> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color:
-                        !isIncreasing
-                            ? Colors.red.shade800
-                            : Colors.green.shade800,
+                    color: !isIncreasing
+                        ? Colors.red.shade800
+                        : Colors.green.shade800,
                   ),
                 ),
                 SizedBox(height: 8),
@@ -290,10 +306,9 @@ class _OutputViewState extends State<OutputView> {
                   resultMessage,
                   style: TextStyle(
                     fontSize: 14,
-                    color:
-                        !isIncreasing
-                            ? Colors.red.shade700
-                            : Colors.green.shade700,
+                    color: !isIncreasing
+                        ? Colors.red.shade700
+                        : Colors.green.shade700,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -326,7 +341,7 @@ class _OutputViewState extends State<OutputView> {
                       ),
                       SizedBox(height: 8),
                       Text(
-                        "${currentInventory}L",
+                        "${formatter.format(currentInventory)}L",
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -362,12 +377,13 @@ class _OutputViewState extends State<OutputView> {
                       ),
                       SizedBox(height: 8),
                       Text(
-                        "${netDailyChange >= 0 ? '+' : ''}${netDailyChange.toStringAsFixed(1)}L",
+                        "${netDailyChange >= 0 ? '+' : ''}${formatter.format(netDailyChange.toInt())}L",
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color:
-                              netDailyChange >= 0 ? Colors.green : Colors.red,
+                          color: netDailyChange >= 0
+                              ? Colors.green
+                              : Colors.red,
                         ),
                       ),
                       Text(
@@ -440,10 +456,6 @@ class _OutputViewState extends State<OutputView> {
               spacing: 32,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ConstrainedWidthWidget(
-                  child: Text("Results", style: headingStyle),
-                ),
-
                 // Results cards
                 _buildResultsCards(),
 
@@ -452,12 +464,12 @@ class _OutputViewState extends State<OutputView> {
                     children: [
                       ConstrainedWidthWidget(
                         child: Text(
-                          "Assumed Rainfall Scenario",
+                          "Assumed Rainfall Scenario:",
                           style: inputFieldStyle,
                         ),
                       ),
 
-                      SizedBox(height: 16),
+                      SizedBox(height: 8),
 
                       // Rainfall pattern dropdown
                       ConstrainedWidthWidget(
@@ -517,12 +529,11 @@ class _OutputViewState extends State<OutputView> {
                                     filled: true,
                                     fillColor: white,
                                     labelStyle: inputFieldStyle,
-                                    floatingLabelBehavior:
-                                        FloatingLabelBehavior
-                                            .never, // Removed floating label
+                                    floatingLabelBehavior: FloatingLabelBehavior
+                                        .never, // Removed floating label
                                   ),
                                   textStyle: inputFieldStyle,
-                                  hintText: "Select rainfall pattern",
+                                  hintText: "Select rainfall scenario",
                                   onSelected: (rainfall) {
                                     if (rainfall != null) {
                                       setState(() {
@@ -538,14 +549,13 @@ class _OutputViewState extends State<OutputView> {
                             IconButton(
                               icon: Icon(Icons.help, color: white),
                               tooltip: "Learn more about rainfall patterns",
-                              onPressed:
-                                  () => _showAlertDialog(
-                                    "Assumed rainfall scenario is the assumption made about "
-                                    "rainfall in your area based on data from the "
-                                    "last 10 years for each given month.\n\n"
-                                    "The greater the rainfall, the greater your "
-                                    "water intake.",
-                                  ),
+                              onPressed: () => _showAlertDialog(
+                                "Assumed rainfall scenario is the assumption made about "
+                                "rainfall in your area based on data from the "
+                                "last 10 years for each given month.\n\n"
+                                "The greater the rainfall, the greater your "
+                                "water intake.",
+                              ),
                             ),
                           ],
                         ),
@@ -584,54 +594,54 @@ class _OutputViewState extends State<OutputView> {
                 ),
 
                 // Per person water usage slider
-                Column(
-                  spacing: 16,
-                  children: [
-                    ConstrainedWidthWidget(
-                      child: Text(
-                        "Adjust household water usage:",
-                        style: inputFieldStyle,
-                      ),
-                    ),
-                    ConstrainedWidthWidget(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "${dailyUsage.toInt()}L/day",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Slider(
-                              value: dailyUsage,
-                              activeColor: black,
-                              secondaryActiveColor: white,
-                              thumbColor: white,
-                              min: 50,
-                              max: 2000,
-                              divisions: 45,
-                              onChanged: (value) {
-                                setState(() {
-                                  dailyUsage = value;
-                                });
-                              },
-                              onChangeEnd: (value) {
-                                setState(() {
-                                  // TODO: Update chart
-                                  // _calculateResults(); // Recalculate when slider stops
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                // Column(
+                //   spacing: 16,
+                //   children: [
+                //     ConstrainedWidthWidget(
+                //       child: Text(
+                //         "Adjust household water usage:",
+                //         style: inputFieldStyle,
+                //       ),
+                //     ),
+                //     ConstrainedWidthWidget(
+                //       child: Row(
+                //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //         children: [
+                //           Text(
+                //             "${formatter.format(dailyUsage)}L/day",
+                //             style: TextStyle(
+                //               fontSize: 18,
+                //               fontWeight: FontWeight.bold,
+                //             ),
+                //           ),
+                //           SizedBox(width: 8),
+                //           Expanded(
+                //             child: Slider(
+                //               value: dailyUsage,
+                //               activeColor: black,
+                //               secondaryActiveColor: white,
+                //               thumbColor: white,
+                //               min: 50,
+                //               max: 3000, // TODO: 2000?
+                //               divisions: 45,
+                //               onChanged: (value) {
+                //                 setState(() {
+                //                   dailyUsage = value;
+                //                 });
+                //               },
+                //               onChangeEnd: (value) {
+                //                 setState(() {
+                //                   // TODO: Update chart
+                //                   // _calculateResults(); // Recalculate when slider stops
+                //                 });
+                //               },
+                //             ),
+                //           ),
+                //         ],
+                //       ),
+                //     ),
+                //   ],
+                // ),
 
                 // Daily intake/usage breakdown
                 ConstrainedWidthWidget(
@@ -655,7 +665,7 @@ class _OutputViewState extends State<OutputView> {
                               style: TextStyle(fontSize: 14),
                             ),
                             Text(
-                              "+${dailyIntake.toStringAsFixed(1)}L",
+                              "+${formatter.format(dailyIntake)}L",
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
@@ -673,7 +683,7 @@ class _OutputViewState extends State<OutputView> {
                               style: TextStyle(fontSize: 14),
                             ),
                             Text(
-                              "-${dailyUsage.toStringAsFixed(1)}L",
+                              "-${formatter.format(dailyUsage)}L",
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
@@ -694,14 +704,13 @@ class _OutputViewState extends State<OutputView> {
                               ),
                             ),
                             Text(
-                              "${netDailyChange >= 0 ? '+' : ''}${netDailyChange.toStringAsFixed(1)}L",
+                              "${netDailyChange >= 0 ? '+' : ''}${formatter.format(netDailyChange)}L",
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color:
-                                    netDailyChange >= 0
-                                        ? Colors.green
-                                        : Colors.red,
+                                color: netDailyChange >= 0
+                                    ? Colors.green
+                                    : Colors.red,
                               ),
                             ),
                           ],
