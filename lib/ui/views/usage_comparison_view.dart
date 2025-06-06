@@ -1,24 +1,26 @@
+import 'package:aquabalance/ui/views/water_usage_view.dart';
+import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:aquabalance/ui/views/usage_comparison_view.dart';
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '/logic/results_calculator.dart';
 import '/ui/views/home_view.dart';
 import '/ui/widgets/constrained_width_widget.dart';
 import '/config/constants.dart';
+import 'optimisation_tips_view.dart';
 
-class OutputView extends StatefulWidget {
-  /// [OutputView] to display results of tool
-  const OutputView({super.key});
+class UsageComparisonView extends StatefulWidget {
+  /// [UsageComparisonView] to model different water usage scenarios
+  const UsageComparisonView({super.key});
 
   @override
-  State<OutputView> createState() => _OutputViewState();
+  State<UsageComparisonView> createState() => _UsageComparisonViewState();
 }
 
-class _OutputViewState extends State<OutputView> {
+class _UsageComparisonViewState extends State<UsageComparisonView> {
   bool isPressed = false;
-  // bool optimisationIsPressed = false;
+  bool optimisationIsPressed = false;
   bool usageIsPressed = false;
 
   // Results data
@@ -32,6 +34,8 @@ class _OutputViewState extends State<OutputView> {
   List<Map<String, dynamic>> projectedData = [];
   Map<String, dynamic> tankSummary = {};
   int annualRainfall = 0;
+
+  double comparisonUsage = 0;
 
   // User inputs
   String selectedRainfall = "10-year median";
@@ -238,166 +242,6 @@ class _OutputViewState extends State<OutputView> {
     );
   }
 
-  // Build results cards
-  Widget _buildResultsCards() {
-    return Column(
-      spacing: 16,
-      children: [
-        // Days remaining card
-        ConstrainedWidthWidget(
-          child: Container(
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: !isIncreasing ? Colors.red.shade50 : Colors.green.shade50,
-              border: Border.all(
-                color: !isIncreasing ? Colors.red : Colors.green,
-                width: 3,
-              ),
-              borderRadius: kBorderRadius,
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(width: 40),
-                    Icon(
-                      daysLeft == -1
-                          ? Icons.trending_up
-                          : !isIncreasing
-                          ? Icons.warning
-                          : Icons.check_circle,
-                      size: 40,
-                      color: !isIncreasing ? Colors.red : Colors.green,
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.warning_amber_outlined, color: black),
-                      tooltip: "Disclaimer",
-                      onPressed: () => _showAlertDialog(
-                        "This tool "
-                        "uses calculations to estimate water "
-                        "intake and usage, and may not reflect actual "
-                        "measures. Results should not be relied "
-                        "upon for critical decisions without "
-                        "professional advice. Data entered into this app "
-                        "will be stored on your device and kept private.",
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 12),
-                Text(
-                  daysLeft == -1
-                      ? "Water Increasing!"
-                      : "$daysLeft days remaining",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: !isIncreasing
-                        ? Colors.red.shade800
-                        : Colors.green.shade800,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  resultMessage,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: !isIncreasing
-                        ? Colors.red.shade700
-                        : Colors.green.shade700,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // Current status cards
-        ConstrainedWidthWidget(
-          child: Row(
-            spacing: 16,
-            children: [
-              Expanded(
-                child: Container(
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: white,
-                    border: Border.all(color: black, width: 2),
-                    borderRadius: kBorderRadius,
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        "Current Inventory",
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        "${formatter.format(currentInventory)}L",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: blue,
-                        ),
-                      ),
-                      if (tankSummary['totalCapacity'] != null &&
-                          tankSummary['totalCapacity'] > 0)
-                        Text(
-                          "${tankSummary['fillPercentage'].toStringAsFixed(1)}% full",
-                          style: TextStyle(fontSize: 10, color: Colors.grey),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: white,
-                    border: Border.all(color: black, width: 2),
-                    borderRadius: kBorderRadius,
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        "Daily Balance",
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        "${netDailyChange >= 0 ? '+' : ''}${formatter.format(netDailyChange.toInt())}L",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: netDailyChange >= 0
-                              ? Colors.green
-                              : Colors.red,
-                        ),
-                      ),
-                      Text(
-                        "per day",
-                        style: TextStyle(fontSize: 10, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final mediaWidth = MediaQuery.sizeOf(context).width;
@@ -412,7 +256,7 @@ class _OutputViewState extends State<OutputView> {
             children: [
               CircularProgressIndicator(color: white),
               SizedBox(height: 16),
-              Text("Calculating results...", style: subHeadingStyle),
+              Text("Preparing comparison...", style: subHeadingStyle),
             ],
           ),
         ),
@@ -444,18 +288,63 @@ class _OutputViewState extends State<OutputView> {
     }
 
     return Scaffold(
-      appBar: buildAppBar(context, 5),
-      body: Center(
+      appBar: AppBar(
+        toolbarHeight: 80,
+        backgroundColor: Colors.transparent,
+        automaticallyImplyLeading: true,
+        leadingWidth: 144,
+        leading: IconButton(
+          icon: Padding(
+            padding: EdgeInsets.fromLTRB(24, 12, 32, 12),
+            child: Row(
+              spacing: 8,
+              children: [
+                Icon(Icons.arrow_back_ios_new),
+                Text(
+                  "Back",
+                  style: GoogleFonts.openSans(
+                    textStyle: const TextStyle(
+                      color: white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          color: white,
+          onPressed: () => Navigator.pop(context), // Back to prev view
+        ),
+        actions: [
+          Hero(
+            tag: "logo",
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(0, 12, 48, 12),
+              child: Image.asset(logo),
+            ),
+          ),
+        ],
+      ),
+      body: // Water optimisation tips
+      Center(
         child: SingleChildScrollView(
           child: Padding(
-            padding: kPadding,
+            padding: const EdgeInsets.all(32),
             child: Column(
               spacing: 32,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Results cards
-                _buildResultsCards(),
-
+                ConstrainedWidthWidget(
+                  child: Text("Usage Comparison", style: headingStyle),
+                ),
+                ConstrainedWidthWidget(
+                  child: Text(
+                    "Understand how changes in your usage affect your days of "
+                    "remaining inventory",
+                    style: subHeadingStyle,
+                  ),
+                ),
                 ConstrainedWidthWidget(
                   child: Column(
                     children: [
@@ -560,7 +449,6 @@ class _OutputViewState extends State<OutputView> {
                     ],
                   ),
                 ),
-
                 // Chart to visualise tank levels
                 ConstrainedWidthWidget(
                   child: Container(
@@ -575,7 +463,7 @@ class _OutputViewState extends State<OutputView> {
                         spacing: 16,
                         children: [
                           Text(
-                            "Water Level Projection",
+                            "Water Level Comparison",
                             style: subHeadingStyle,
                           ),
                           Text(
@@ -590,174 +478,270 @@ class _OutputViewState extends State<OutputView> {
                   ),
                 ),
 
-                // Daily intake/usage breakdown
+                // Slider
                 ConstrainedWidthWidget(
                   child: Container(
-                    padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      border: Border.all(color: black, width: 2),
+                      color: white,
                       borderRadius: kBorderRadius,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Daily Water Balance", style: subHeadingStyle),
-                        SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Water intake:",
-                              style: TextStyle(fontSize: 14),
-                            ),
-                            Text(
-                              "+${formatter.format(dailyIntake)}L",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Water usage:",
-                              style: TextStyle(fontSize: 14),
-                            ),
-                            Text(
-                              "-${formatter.format(dailyUsage)}L",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Divider(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Change in inventory:",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              "${netDailyChange >= 0 ? '+' : ''}${formatter.format(netDailyChange)}L",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: netDailyChange >= 0
-                                    ? Colors.green
-                                    : Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Start again button
-                Tooltip(
-                  message:
-                      "Compare your water usage with different usage levels.",
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 500),
-                    child: InkWell(
-                      borderRadius: kBorderRadius,
-                      onTap: () {
-                        setState(() {
-                          usageIsPressed = true;
-                        });
-                        Future.delayed(const Duration(milliseconds: 150)).then((
-                          value,
-                        ) {
-                          setState(() {
-                            usageIsPressed = false;
-                          });
-                          Navigator.push(
-                            // ignore: use_build_context_synchronously
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const UsageComparisonView(),
-                            ),
-                          );
-                        });
-                      },
-                      child: AnimatedContainer(
-                        width: mediaWidth * 0.8,
-                        duration: const Duration(milliseconds: 100),
-                        decoration: BoxDecoration(
-                          color: white,
-                          border: Border.all(color: black, width: 3),
-                          borderRadius: kBorderRadius,
-                          boxShadow: [usageIsPressed ? BoxShadow() : kShadow],
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Center(
-                            child: Text(
-                              "Model Usage Scenarios",
-                              style: subHeadingStyle,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        spacing: 16,
+                        children: [
+                          ConstrainedWidthWidget(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("Current Usage: ", style: subHeadingStyle),
+                                Text(
+                                  "${formatter.format(dailyUsage)}L/day",
+                                  style: subHeadingStyle,
+                                ),
+                              ],
                             ),
                           ),
-                        ),
+                          ConstrainedWidthWidget(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Comparison Usage: ",
+                                  style: subHeadingStyle,
+                                ),
+                                Text(
+                                  "${formatter.format(comparisonUsage)}L/day",
+                                  style: subHeadingStyle,
+                                ),
+                              ],
+                            ),
+                          ),
+                          ConstrainedWidthWidget(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Icon(
+                                  Icons.water_drop_outlined,
+                                  color: black,
+                                  size: 60,
+                                ),
+                                Expanded(
+                                  child: Slider(
+                                    value: comparisonUsage,
+                                    activeColor: black,
+                                    secondaryActiveColor: white,
+                                    thumbColor: blue,
+                                    min: 0,
+                                    max: 2000,
+                                    divisions: 45,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        comparisonUsage = value;
+                                      });
+                                    },
+                                    onChangeEnd: (value) {
+                                      setState(() {
+                                        // TODO: Update chart
+                                        // _calculateResults(); // Recalculate when slider stops
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
 
-                // Start again button
-                Tooltip(
-                  message: "Return to home page and start again",
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 500),
-                    child: InkWell(
+                ConstrainedWidthWidget(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: white,
+                      border: Border.all(color: black, width: 3),
                       borderRadius: kBorderRadius,
-                      onTap: () {
-                        setState(() {
-                          isPressed = true;
-                        });
-                        Future.delayed(const Duration(milliseconds: 150)).then((
-                          value,
-                        ) {
-                          setState(() {
-                            isPressed = false;
-                          });
-                          Navigator.push(
-                            // ignore: use_build_context_synchronously
-                            context,
-                            MaterialPageRoute(builder: (context) => HomeView()),
-                          );
-                        });
-                      },
-                      child: AnimatedContainer(
-                        width: mediaWidth * 0.8,
-                        duration: const Duration(milliseconds: 100),
-                        decoration: BoxDecoration(
-                          color: white,
-                          border: Border.all(color: black, width: 3),
-                          borderRadius: kBorderRadius,
-                          boxShadow: [isPressed ? BoxShadow() : kShadow],
+                    ),
+                    child: Padding(
+                      padding: EdgeInsetsGeometry.all(16),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  "Water Projection Results",
+                                  textAlign: TextAlign.left,
+                                  style: inputFieldStyle,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  "Days of current inventory remaining:",
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [Flexible(child: Text("Current usage:"))],
+                          ),
+                          Row(
+                            children: [
+                              Flexible(child: Text("Comparison usage:")),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  "Your comparison usage assumes a % reduction/ increase on your current usage",
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                ConstrainedWidthWidget(
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          "How can I optimise my water usage?",
+                          style: subHeadingStyle,
                         ),
-                        child: Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Center(
-                            child: Text("Start Again", style: subHeadingStyle),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Optimisation tips button
+                ConstrainedWidthWidget(
+                  child: Row(
+                    spacing: 16,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Tooltip(
+                          message: "Water optimisation tips",
+                          child: InkWell(
+                            borderRadius: kBorderRadius,
+                            onTap: () {
+                              setState(() {
+                                optimisationIsPressed = true;
+                              });
+                              Future.delayed(
+                                const Duration(milliseconds: 150),
+                              ).then((value) async {
+                                setState(() {
+                                  optimisationIsPressed = false;
+                                });
+
+                                // nav to optimisation tips view
+                                await Navigator.push(
+                                  // ignore: use_build_context_synchronously
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        OptimisationTipsView(),
+                                  ),
+                                );
+
+                                // Generate content based on prompt
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 100),
+                              decoration: BoxDecoration(
+                                color: white,
+                                border: Border.all(color: black, width: 3),
+                                borderRadius: kBorderRadius,
+                                boxShadow: [
+                                  optimisationIsPressed ? BoxShadow() : kShadow,
+                                ],
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.all(16),
+                                child: Center(
+                                  child: Text(
+                                    "Optimisation Tips",
+                                    style: subHeadingStyle,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
+                  ),
+                ),
+                // Optimisation tips button
+                ConstrainedWidthWidget(
+                  child: Row(
+                    spacing: 16,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Tooltip(
+                          message: "Back to water usage input page",
+                          child: InkWell(
+                            borderRadius: kBorderRadius,
+                            onTap: () {
+                              setState(() {
+                                usageIsPressed = true;
+                              });
+                              Future.delayed(
+                                const Duration(milliseconds: 150),
+                              ).then((value) async {
+                                setState(() {
+                                  usageIsPressed = false;
+                                });
+
+                                // nav to optimisation tips view
+                                await Navigator.push(
+                                  // ignore: use_build_context_synchronously
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => WaterUsageView(),
+                                  ),
+                                );
+
+                                // Generate content based on prompt
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 100),
+                              decoration: BoxDecoration(
+                                color: white,
+                                border: Border.all(color: black, width: 3),
+                                borderRadius: kBorderRadius,
+                                boxShadow: [
+                                  usageIsPressed ? BoxShadow() : kShadow,
+                                ],
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.all(16),
+                                child: Center(
+                                  child: Text(
+                                    "Back to Water Usage",
+                                    style: subHeadingStyle,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

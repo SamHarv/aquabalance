@@ -28,7 +28,6 @@ class ResultsCalculator {
         currentInventory: currentInventory,
         dailyUsage: dailyUsage,
         monthlyIntake: monthlyIntake,
-        perPersonUsage: perPersonUsage,
       );
 
       return results;
@@ -344,7 +343,6 @@ class ResultsCalculator {
     required int currentInventory,
     required double dailyUsage,
     required Map<String, double> monthlyIntake,
-    required double perPersonUsage,
   }) {
     final currentMonth = DateTime.now().month;
     final monthNames = [
