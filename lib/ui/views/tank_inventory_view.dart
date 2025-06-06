@@ -363,71 +363,76 @@ class _TankInventoryViewState extends State<TankInventoryView> {
       }
     }
 
-    // Show results dialog
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: kBorderRadius,
-          side: kBorderSide,
-        ),
-        title: Text('Tank Analysis Results', style: subHeadingStyle),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Total Capacity: ${formatter.format(totalCapacity.toInt())} L',
-                style: subHeadingStyle,
-              ),
-              Text(
-                'Total Inventory: ${formatter.format(totalInventory.toInt())} L',
-                style: subHeadingStyle,
-              ),
-              Text(
-                'Available Space: ${formatter.format((totalCapacity - totalInventory).toInt())} L',
-                style: subHeadingStyle,
-              ),
-              Text(
-                'Fill Percentage: ${totalCapacity > 0 ? ((totalInventory / totalCapacity) * 100).toStringAsFixed(1) : "0.0"}%',
-                style: subHeadingStyle,
-              ),
-              SizedBox(height: 16),
-              // Display results for each tank
-              Text('Individual Tanks:', style: subHeadingStyle),
-              ...tankResults.map(
-                (result) => Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4),
-                  child: Text(result, style: TextStyle(fontSize: 14)),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text("Back", style: TextStyle(color: black)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => RoofCatchmentView()),
-              );
-            },
-            child: const Text(
-              "Continue",
-              style: TextStyle(color: black, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
+    _saveData(); // Save updated calculations
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => RoofCatchmentView()),
     );
 
-    _saveData(); // Save updated calculations
+    // // Show results dialog
+    // showDialog(
+    //   context: context,
+    //   builder: (context) => AlertDialog(
+    //     shape: RoundedRectangleBorder(
+    //       borderRadius: kBorderRadius,
+    //       side: kBorderSide,
+    //     ),
+    //     title: Text('Tank Analysis Results', style: subHeadingStyle),
+    //     content: SingleChildScrollView(
+    //       child: Column(
+    //         mainAxisSize: MainAxisSize.min,
+    //         crossAxisAlignment: CrossAxisAlignment.start,
+    //         children: [
+    //           Text(
+    //             'Total Capacity: ${formatter.format(totalCapacity.toInt())} L',
+    //             style: subHeadingStyle,
+    //           ),
+    //           Text(
+    //             'Total Inventory: ${formatter.format(totalInventory.toInt())} L',
+    //             style: subHeadingStyle,
+    //           ),
+    //           Text(
+    //             'Available Space: ${formatter.format((totalCapacity - totalInventory).toInt())} L',
+    //             style: subHeadingStyle,
+    //           ),
+    //           Text(
+    //             'Fill Percentage: ${totalCapacity > 0 ? ((totalInventory / totalCapacity) * 100).toStringAsFixed(1) : "0.0"}%',
+    //             style: subHeadingStyle,
+    //           ),
+    //           SizedBox(height: 16),
+    //           // Display results for each tank
+    //           Text('Individual Tanks:', style: subHeadingStyle),
+    //           ...tankResults.map(
+    //             (result) => Padding(
+    //               padding: EdgeInsets.symmetric(vertical: 4),
+    //               child: Text(result, style: TextStyle(fontSize: 14)),
+    //             ),
+    //           ),
+    //         ],
+    //       ),
+    //     ),
+    //     actions: [
+    //       TextButton(
+    //         onPressed: () => Navigator.of(context).pop(),
+    //         child: const Text("Back", style: TextStyle(color: black)),
+    //       ),
+    //       TextButton(
+    //         onPressed: () {
+    //           Navigator.of(context).pop();
+    //           Navigator.push(
+    //             context,
+    //             MaterialPageRoute(builder: (context) => RoofCatchmentView()),
+    //           );
+    //         },
+    //         child: const Text(
+    //           "Continue",
+    //           style: TextStyle(color: black, fontWeight: FontWeight.bold),
+    //         ),
+    //       ),
+    //     ],
+    //   ),
+    // );
   }
 
   @override
@@ -448,13 +453,13 @@ class _TankInventoryViewState extends State<TankInventoryView> {
     // Show loading spinner while data is being loaded
     if (isLoading) {
       return Scaffold(
-        appBar: buildAppBar(context),
+        appBar: buildAppBar(context, 2),
         body: Center(child: CircularProgressIndicator(color: white)),
       );
     }
 
     return Scaffold(
-      appBar: buildAppBar(context),
+      appBar: buildAppBar(context, 2),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(

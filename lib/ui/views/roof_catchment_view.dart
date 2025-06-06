@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '/ui/views/water_usage_view.dart';
 import '/ui/widgets/input_field_widget.dart';
@@ -24,6 +25,11 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
   late final TextEditingController roofCatchmentController;
   late final TextEditingController otherIntakeController;
 
+  late final Future<int> tankInventory;
+  late final Future<int> tankCapacity;
+
+  late final Future<List> tankData;
+
   // Data persist service
   final _dataPersistService = DataPersistService();
 
@@ -35,7 +41,49 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
     super.initState();
     roofCatchmentController = TextEditingController();
     otherIntakeController = TextEditingController();
+    tankInventory = _getTankInventory();
+    tankCapacity = _getTotalTankCapacity();
+    tankData = _getTankData();
     _loadSavedData();
+  }
+
+  Future<List> _getTankData() async {
+    List data = [];
+    data.add(await tankInventory);
+    data.add(await tankCapacity);
+    return data;
+  }
+
+  // Get tank inventory
+  Future<int> _getTankInventory() async {
+    try {
+      final tankData = await _dataPersistService.loadTankData();
+      final tanks = tankData['tanks'] as List;
+      int totalInventory = 0;
+      for (var tank in tanks) {
+        final waterLevel = tank.waterLevel ?? 0;
+        totalInventory += waterLevel as int;
+      }
+      return totalInventory;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  // Get total tanks capacity
+  Future<int> _getTotalTankCapacity() async {
+    try {
+      final tankData = await _dataPersistService.loadTankData();
+      final tanks = tankData['tanks'] as List;
+      int totalCapacity = 0;
+      for (var tank in tanks) {
+        final capacity = tank.capacity ?? 0;
+        totalCapacity += capacity as int;
+      }
+      return totalCapacity;
+    } catch (e) {
+      return 0;
+    }
   }
 
   // Load saved data from SharedPreferences
@@ -159,14 +207,14 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
     // Show loading spinner while data is being loaded
     if (isLoading) {
       return Scaffold(
-        appBar: buildAppBar(context),
+        appBar: buildAppBar(context, 3),
         body: Center(child: CircularProgressIndicator(color: white)),
       );
     }
 
     final mediaWidth = MediaQuery.sizeOf(context).width;
     return Scaffold(
-      appBar: buildAppBar(context),
+      appBar: buildAppBar(context, 3),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -175,6 +223,86 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
               spacing: 32,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                FutureBuilder(
+                  future: tankData,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      return ConstrainedWidthWidget(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: white,
+                            // border: Border.all(color: black, width: 3),
+                            borderRadius: kBorderRadius,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Tank Summary",
+                                      style: inputFieldStyle,
+                                    ),
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: "Tank inventory: ",
+                                            style: GoogleFonts.openSans(
+                                              textStyle: const TextStyle(
+                                                color: black,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text:
+                                                "${formatter.format(snapshot.data![0])}L",
+                                            style: subHeadingStyle,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: "Total capacity: ",
+                                            style: GoogleFonts.openSans(
+                                              textStyle: const TextStyle(
+                                                color: black,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text:
+                                                "${formatter.format(snapshot.data![1])}L",
+                                            style: subHeadingStyle,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                // Percent full
+                                Text(
+                                  "${(snapshot.data![0] / snapshot.data![1] * 100).toStringAsFixed(0)}% full",
+                                  style: subHeadingStyle,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    } else {
+                      return CircularProgressIndicator(color: white);
+                    }
+                  },
+                ),
                 ConstrainedWidthWidget(
                   child: Text(
                     "Roof Catchment & Other Intake",

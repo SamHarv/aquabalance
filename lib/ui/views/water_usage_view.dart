@@ -304,14 +304,14 @@ class _WaterUsageViewState extends State<WaterUsageView> {
     // Show loading spinner while data is being loaded
     if (isLoading) {
       return Scaffold(
-        appBar: buildAppBar(context),
+        appBar: buildAppBar(context, 4),
         body: Center(child: CircularProgressIndicator(color: white)),
       );
     }
 
     final mediaWidth = MediaQuery.sizeOf(context).width;
     return Scaffold(
-      appBar: buildAppBar(context),
+      appBar: buildAppBar(context, 4),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(

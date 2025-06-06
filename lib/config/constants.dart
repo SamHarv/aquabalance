@@ -78,8 +78,9 @@ const kShadow = BoxShadow(
 );
 
 // Build app bar
-AppBar buildAppBar(BuildContext context) {
+AppBar buildAppBar(BuildContext context, int step) {
   return AppBar(
+    title: Text("Step $step of 5", style: inputFieldStyle),
     toolbarHeight: 80,
     backgroundColor: Colors.transparent,
     automaticallyImplyLeading: true,

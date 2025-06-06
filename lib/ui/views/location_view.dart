@@ -157,7 +157,7 @@ class _LocationViewState extends State<LocationView> {
     final mediaWidth = MediaQuery.sizeOf(context).width;
 
     return Scaffold(
-      appBar: buildAppBar(context),
+      appBar: buildAppBar(context, 1),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(

@@ -413,7 +413,7 @@ class _OutputViewState extends State<OutputView> {
     // Loading screen
     if (isLoading) {
       return Scaffold(
-        appBar: buildAppBar(context),
+        appBar: buildAppBar(context, 5),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -430,7 +430,7 @@ class _OutputViewState extends State<OutputView> {
     // Error screen
     if (errorMessage != null) {
       return Scaffold(
-        appBar: buildAppBar(context),
+        appBar: buildAppBar(context, 5),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -452,7 +452,7 @@ class _OutputViewState extends State<OutputView> {
     }
 
     return Scaffold(
-      appBar: buildAppBar(context),
+      appBar: buildAppBar(context, 5),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(

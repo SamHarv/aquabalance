@@ -2,6 +2,7 @@ import 'package:aquabalance/config/constants.dart';
 import 'package:aquabalance/logic/services/data_persist_service.dart';
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../widgets/constrained_width_widget.dart';
 
@@ -180,7 +181,44 @@ class _OptimisationTipsViewState extends State<OptimisationTipsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar(context),
+      appBar: AppBar(
+        toolbarHeight: 80,
+        backgroundColor: Colors.transparent,
+        automaticallyImplyLeading: true,
+        leadingWidth: 144,
+        leading: IconButton(
+          icon: Padding(
+            padding: EdgeInsets.fromLTRB(24, 12, 32, 12),
+            child: Row(
+              spacing: 8,
+              children: [
+                Icon(Icons.arrow_back_ios_new),
+                Text(
+                  "Back",
+                  style: GoogleFonts.openSans(
+                    textStyle: const TextStyle(
+                      color: white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          color: white,
+          onPressed: () => Navigator.pop(context), // Back to prev view
+        ),
+        actions: [
+          Hero(
+            tag: "logo",
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(0, 12, 48, 12),
+              child: Image.asset(logo),
+            ),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(32),
