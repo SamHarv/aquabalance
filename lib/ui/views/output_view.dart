@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -34,6 +35,7 @@ class _OutputViewState extends State<OutputView> {
   String resultMessage = "";
   List<Map<String, dynamic>> projectedData = [];
   Map<String, dynamic> tankSummary = {};
+  int annualRainfall = 0;
 
   // User inputs
   String selectedRainfall = "10-year median";
@@ -42,6 +44,8 @@ class _OutputViewState extends State<OutputView> {
   // Loading state
   bool isLoading = true;
   String? errorMessage;
+
+  String tipsGenerated = "";
 
   @override
   void initState() {
@@ -747,15 +751,18 @@ class _OutputViewState extends State<OutputView> {
                                 setState(() {
                                   optimisationIsPressed = false;
                                 });
+
                                 // nav to optimisation tips view
                                 await Navigator.push(
                                   // ignore: use_build_context_synchronously
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        const OptimisationTipsView(),
+                                        OptimisationTipsView(),
                                   ),
                                 );
+
+                                // Generate content based on prompt
                               });
                             },
                             child: AnimatedContainer(

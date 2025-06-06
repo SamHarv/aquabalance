@@ -160,6 +160,11 @@ class ResultsCalculator {
         }
       });
 
+      // get last year's annual rainfall
+      final lastYear = monthlyRainfallData.values.last;
+      // sum last year's rainfall
+      lastYearTotal = lastYear.fold<double>(0, (sum, value) => sum + value);
+
       print(monthlyStats.toString());
       return monthlyStats;
     } catch (e) {

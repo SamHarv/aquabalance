@@ -120,3 +120,5 @@ AppBar buildAppBar(BuildContext context) {
 }
 
 final formatter = NumberFormat('#,##0');
+
+double lastYearTotal = 0;
