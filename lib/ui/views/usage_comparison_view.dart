@@ -1,11 +1,10 @@
-import 'package:aquabalance/ui/views/water_usage_view.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '/logic/results_calculator.dart';
-import '/ui/views/home_view.dart';
 import '/ui/widgets/constrained_width_widget.dart';
 import '/config/constants.dart';
 import 'optimisation_tips_view.dart';
@@ -19,8 +18,9 @@ class UsageComparisonView extends StatefulWidget {
 }
 
 class _UsageComparisonViewState extends State<UsageComparisonView> {
-  bool isPressed = false;
+  // For optimisation tips button animation
   bool optimisationIsPressed = false;
+  // For back to water usage animation
   bool usageIsPressed = false;
 
   // Results data
@@ -32,10 +32,13 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
   bool isIncreasing = false;
   String resultMessage = "";
   List<Map<String, dynamic>> projectedData = [];
+  Map<String, double> monthlyIntakeData = {}; // Add this line
   Map<String, dynamic> tankSummary = {};
   int annualRainfall = 0;
 
   double comparisonUsage = 0;
+  dynamic comparisonDaysLeft = 0;
+  String comparisonResultMessage = "";
 
   // User inputs
   String selectedRainfall = "10-year median";
@@ -48,6 +51,10 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
   void initState() {
     super.initState();
     _calculateResults();
+    comparisonResultMessage = getComparisonDifference(
+      dailyUsage,
+      comparisonUsage,
+    );
   }
 
   // Show alert dialog
@@ -70,6 +77,26 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
     );
   }
 
+  // Get percentage difference in daily usage vs comparison usage
+  String getComparisonDifference(double current, double comparison) {
+    double percDiff = 0;
+    if (comparison == 0) {
+      percDiff = -100;
+    } else if (current == 0) {
+      percDiff = 100;
+    } else {
+      percDiff = ((comparison - current) / current) * 100;
+    }
+
+    if (percDiff > 0) {
+      percDiff = percDiff.abs();
+      return "${percDiff.toInt()}% greater than current usage";
+    } else {
+      percDiff = percDiff.abs();
+      return "${percDiff.toInt()}% less than current usage";
+    }
+  }
+
   // Calculate results
   Future<void> _calculateResults() async {
     setState(() {
@@ -90,11 +117,14 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
         daysLeft = results['daysRemaining'] ?? 0;
         currentInventory = results['currentInventory'] ?? 0;
         dailyUsage = results['dailyUsage'] ?? 0;
+        comparisonUsage = results['dailyUsage'] ?? 0;
         dailyIntake = results['dailyIntake'] ?? 0;
         netDailyChange = results['netDailyChange'] ?? 0;
         isIncreasing = results['isIncreasing'] ?? false;
         resultMessage = results['message'] ?? "";
         projectedData = results['projectedData'] ?? [];
+        monthlyIntakeData =
+            results['monthlyIntake'] ?? {}; // Store the monthly intake data
         tankSummary = summary;
         isLoading = false;
       });
@@ -104,6 +134,68 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
         isLoading = false;
       });
     }
+  }
+
+  // Calculate comparison projection data
+  List<Map<String, dynamic>> _calculateComparisonProjection() {
+    if (projectedData.isEmpty || monthlyIntakeData.isEmpty) return [];
+
+    final monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    final List<Map<String, dynamic>> comparisonProjectedData = [];
+    double currentLevel = currentInventory.toDouble();
+    final startDate = DateTime.now();
+    final daysToProject = 90; // Same as original projection
+
+    for (int day = 0; day <= daysToProject; day++) {
+      final projectedDate = startDate.add(Duration(days: day));
+      final monthIndex = projectedDate.month - 1;
+      final monthName = monthNames[monthIndex];
+
+      // Calculate days in this specific month and year
+      final daysInMonth = DateTime(
+        projectedDate.year,
+        projectedDate.month + 1,
+        0,
+      ).day;
+
+      // Get the daily intake for this specific month using the stored monthly intake data
+      final dailyIntakeForThisMonth =
+          monthlyIntakeData[monthName]! / daysInMonth;
+
+      // Update water level with comparison usage instead of current usage
+      currentLevel += (dailyIntakeForThisMonth - comparisonUsage);
+
+      // Ensure level doesn't go below 0
+      if (currentLevel < 0) currentLevel = 0;
+
+      comparisonProjectedData.add({
+        'day': day,
+        'date': projectedDate.toIso8601String().split('T')[0],
+        'dateFormatted': DateFormat('dd MMM').format(projectedDate),
+        'waterLevel': currentLevel.round(),
+        'dailyIntake': dailyIntakeForThisMonth,
+        'dailyUsage': comparisonUsage,
+      });
+
+      // Stop projecting if tank is empty
+      if (currentLevel <= 0 && day > 0) break;
+    }
+
+    return comparisonProjectedData;
   }
 
   // Build projection chart
@@ -120,10 +212,15 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
       );
     }
 
-    // Find max value for chart scaling
-    final maxLevel = projectedData
-        .map((d) => d['waterLevel'] as int)
-        .reduce((a, b) => a > b ? a : b);
+    // Calculate comparison projection
+    final comparisonProjectedData = _calculateComparisonProjection();
+
+    // Find max value for chart scaling from both datasets
+    final maxLevel = [
+      ...projectedData.map((d) => d['waterLevel'] as int),
+      ...comparisonProjectedData.map((d) => d['waterLevel'] as int),
+    ].reduce((a, b) => a > b ? a : b);
+
     final maxY = maxLevel > 0 ? maxLevel * 1.2 : 1000.0;
 
     return SizedBox(
@@ -166,7 +263,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                   final index = value.toInt();
                   if (index >= 0 && index < projectedData.length) {
                     return Text(
-                      projectedData[index]['dateFormatted'], // 00 Mmm format
+                      projectedData[index]['dateFormatted'],
                       style: TextStyle(
                         color: black,
                         fontSize: 10,
@@ -191,6 +288,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
           minY: 0,
           maxY: maxY,
           lineBarsData: [
+            // Original usage line
             LineChartBarData(
               spots: projectedData.asMap().entries.map((entry) {
                 return FlSpot(
@@ -217,6 +315,27 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                 ),
               ),
             ),
+            // Comparison usage line
+            if (comparisonUsage > 0)
+              LineChartBarData(
+                spots: comparisonProjectedData.asMap().entries.map((entry) {
+                  return FlSpot(
+                    entry.key.toDouble(),
+                    entry.value['waterLevel'].toDouble(),
+                  );
+                }).toList(),
+                isCurved: true,
+                gradient: LinearGradient(
+                  colors: [Colors.orange, Colors.purple],
+                ),
+                barWidth: 3,
+                isStrokeCapRound: true,
+                dotData: FlDotData(show: false),
+                dashArray: [5, 5], // Dashed line to differentiate
+                belowBarData: BarAreaData(
+                  show: false,
+                ), // No fill for comparison line
+              ),
           ],
           lineTouchData: LineTouchData(
             enabled: true,
@@ -224,11 +343,21 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
               getTooltipItems: (touchedSpots) {
                 return touchedSpots.map((spot) {
                   final index = spot.x.toInt();
-                  if (index < projectedData.length) {
+                  final isCurrentUsage = spot.barIndex == 0;
+
+                  if (isCurrentUsage && index < projectedData.length) {
                     final data = projectedData[index];
                     final date = DateTime.parse(data['date']);
                     return LineTooltipItem(
-                      '${date.day}/${date.month}\n${data['waterLevel']}L',
+                      'Current Usage\n${date.day}/${date.month}\n${data['waterLevel']}L',
+                      TextStyle(color: white, fontSize: 12),
+                    );
+                  } else if (!isCurrentUsage &&
+                      index < comparisonProjectedData.length) {
+                    final data = comparisonProjectedData[index];
+                    final date = DateTime.parse(data['date']);
+                    return LineTooltipItem(
+                      'Comparison Usage\n${date.day}/${date.month}\n${data['waterLevel']}L',
                       TextStyle(color: white, fontSize: 12),
                     );
                   }
@@ -242,10 +371,100 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
     );
   }
 
+  // Calculate comparison days remaining
+  void _calculateComparisonDaysRemaining() {
+    if (comparisonUsage <= 0) {
+      comparisonDaysLeft = "Infinite";
+      return;
+    }
+
+    final netDailyChange = dailyIntake - comparisonUsage;
+
+    if (netDailyChange >= 0) {
+      comparisonDaysLeft = "Infinite"; // Infinite/increasing
+    } else {
+      if (currentInventory <= 0) {
+        comparisonDaysLeft = 0;
+      } else {
+        comparisonDaysLeft = (currentInventory / netDailyChange.abs()).floor();
+      }
+    }
+  }
+
+  // Update the chart container to include a legend
+  Widget _buildChartWithLegend() {
+    return ConstrainedWidthWidget(
+      child: Container(
+        decoration: BoxDecoration(
+          color: white,
+          border: Border.all(color: black, width: 3),
+          borderRadius: kBorderRadius,
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            spacing: 16,
+            children: [
+              Text("Water Level Comparison", style: subHeadingStyle),
+              Text(
+                "Selected comparison usage compared to current usage",
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+
+              // Legend
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 20,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          blue,
+                          isIncreasing ? Colors.green : Colors.red,
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      "Current Usage (${formatter.format(dailyUsage)}L/day)",
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Container(
+                    width: 20,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.orange, Colors.purple],
+                      ),
+                    ),
+                    child: CustomPaint(painter: DashedLinePainter()),
+                  ),
+                  SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      "Comparison Usage (${formatter.format(comparisonUsage)}L/day)",
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+
+              _buildProjectionChart(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final mediaWidth = MediaQuery.sizeOf(context).width;
-
     // Loading screen
     if (isLoading) {
       return Scaffold(
@@ -345,6 +564,227 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                     style: subHeadingStyle,
                   ),
                 ),
+
+                // Slider Container
+                ConstrainedWidthWidget(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: white,
+                      borderRadius: kBorderRadius,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        spacing: 16,
+                        children: [
+                          ConstrainedWidthWidget(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Current Usage", style: subHeadingStyle),
+                                SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: formatter.format(dailyUsage),
+                                            // textAlign: TextAlign.right,
+                                            style: GoogleFonts.openSans(
+                                              textStyle: const TextStyle(
+                                                color: black,
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: " L/day",
+                                            // textAlign: TextAlign.right,
+                                            style: GoogleFonts.openSans(
+                                              textStyle: const TextStyle(
+                                                color: black,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: daysLeft.toString(),
+                                            // textAlign: TextAlign.right,
+                                            style: GoogleFonts.openSans(
+                                              textStyle: const TextStyle(
+                                                color: black,
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: " days remaining",
+                                            // textAlign: TextAlign.right,
+                                            style: GoogleFonts.openSans(
+                                              textStyle: const TextStyle(
+                                                color: black,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          ConstrainedWidthWidget(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Icon(
+                                  Icons.water_drop_outlined,
+                                  color: black,
+                                  size: 40,
+                                ),
+                                Expanded(
+                                  child: Slider(
+                                    value: comparisonUsage,
+                                    activeColor: black,
+                                    secondaryActiveColor: white,
+                                    thumbColor: blue,
+                                    min: 0,
+                                    max: dailyUsage * 2,
+                                    divisions: 200,
+                                    label:
+                                        "${formatter.format(comparisonUsage)}L/day",
+                                    onChanged: (value) {
+                                      setState(() {
+                                        comparisonUsage = value;
+                                        comparisonResultMessage =
+                                            getComparisonDifference(
+                                              dailyUsage,
+                                              comparisonUsage,
+                                            );
+                                        _calculateComparisonDaysRemaining();
+                                      });
+                                    },
+                                    onChangeEnd: (value) {
+                                      setState(() {
+                                        comparisonUsage = value;
+                                        comparisonResultMessage =
+                                            getComparisonDifference(
+                                              dailyUsage,
+                                              comparisonUsage,
+                                            );
+                                        _calculateComparisonDaysRemaining();
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          ConstrainedWidthWidget(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Comparison Usage",
+                                  style: subHeadingStyle,
+                                ),
+                                SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: formatter.format(
+                                              comparisonUsage,
+                                            ),
+                                            style: GoogleFonts.openSans(
+                                              textStyle: const TextStyle(
+                                                color: black,
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: " L/day",
+                                            style: GoogleFonts.openSans(
+                                              textStyle: const TextStyle(
+                                                color: black,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: comparisonDaysLeft.toString(),
+                                            style: GoogleFonts.openSans(
+                                              textStyle: const TextStyle(
+                                                color: black,
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: " days remaining",
+                                            style: GoogleFonts.openSans(
+                                              textStyle: const TextStyle(
+                                                color: black,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 8),
+
+                                Text(
+                                  comparisonResultMessage,
+                                  style: GoogleFonts.openSans(
+                                    textStyle: const TextStyle(
+                                      color: black,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Chart to visualise tank levels
+                _buildChartWithLegend(),
+
+                // Rainfall pattern selection
                 ConstrainedWidthWidget(
                   child: Column(
                     children: [
@@ -355,7 +795,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                         ),
                       ),
 
-                      SizedBox(height: 8),
+                      SizedBox(height: 16),
 
                       // Rainfall pattern dropdown
                       ConstrainedWidthWidget(
@@ -449,241 +889,88 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                     ],
                   ),
                 ),
-                // Chart to visualise tank levels
-                ConstrainedWidthWidget(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: white,
-                      border: Border.all(color: black, width: 3),
-                      borderRadius: kBorderRadius,
+
+                Column(
+                  children: [
+                    ConstrainedWidthWidget(
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              "How can I optimise my water usage?",
+                              style: subHeadingStyle,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
+                    SizedBox(height: 16),
+                    // Optimisation tips button
+                    ConstrainedWidthWidget(
+                      child: Row(
                         spacing: 16,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            "Water Level Comparison",
-                            style: subHeadingStyle,
-                          ),
-                          Text(
-                            "Based on current usage and selected rainfall pattern",
-                            style: TextStyle(fontSize: 12, color: Colors.grey),
-                          ),
-
-                          _buildProjectionChart(),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Slider
-                ConstrainedWidthWidget(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: white,
-                      borderRadius: kBorderRadius,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        spacing: 16,
-                        children: [
-                          ConstrainedWidthWidget(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text("Current Usage: ", style: subHeadingStyle),
-                                Text(
-                                  "${formatter.format(dailyUsage)}L/day",
-                                  style: subHeadingStyle,
-                                ),
-                              ],
-                            ),
-                          ),
-                          ConstrainedWidthWidget(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "Comparison Usage: ",
-                                  style: subHeadingStyle,
-                                ),
-                                Text(
-                                  "${formatter.format(comparisonUsage)}L/day",
-                                  style: subHeadingStyle,
-                                ),
-                              ],
-                            ),
-                          ),
-                          ConstrainedWidthWidget(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Icon(
-                                  Icons.water_drop_outlined,
-                                  color: black,
-                                  size: 60,
-                                ),
-                                Expanded(
-                                  child: Slider(
-                                    value: comparisonUsage,
-                                    activeColor: black,
-                                    secondaryActiveColor: white,
-                                    thumbColor: blue,
-                                    min: 0,
-                                    max: 2000,
-                                    divisions: 45,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        comparisonUsage = value;
-                                      });
-                                    },
-                                    onChangeEnd: (value) {
-                                      setState(() {
-                                        // TODO: Update chart
-                                        // _calculateResults(); // Recalculate when slider stops
-                                      });
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                ConstrainedWidthWidget(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: white,
-                      border: Border.all(color: black, width: 3),
-                      borderRadius: kBorderRadius,
-                    ),
-                    child: Padding(
-                      padding: EdgeInsetsGeometry.all(16),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  "Water Projection Results",
-                                  textAlign: TextAlign.left,
-                                  style: inputFieldStyle,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  "Days of current inventory remaining:",
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [Flexible(child: Text("Current usage:"))],
-                          ),
-                          Row(
-                            children: [
-                              Flexible(child: Text("Comparison usage:")),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  "Your comparison usage assumes a % reduction/ increase on your current usage",
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                ConstrainedWidthWidget(
-                  child: Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          "How can I optimise my water usage?",
-                          style: subHeadingStyle,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Optimisation tips button
-                ConstrainedWidthWidget(
-                  child: Row(
-                    spacing: 16,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Tooltip(
-                          message: "Water optimisation tips",
-                          child: InkWell(
-                            borderRadius: kBorderRadius,
-                            onTap: () {
-                              setState(() {
-                                optimisationIsPressed = true;
-                              });
-                              Future.delayed(
-                                const Duration(milliseconds: 150),
-                              ).then((value) async {
-                                setState(() {
-                                  optimisationIsPressed = false;
-                                });
-
-                                // nav to optimisation tips view
-                                await Navigator.push(
-                                  // ignore: use_build_context_synchronously
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        OptimisationTipsView(),
-                                  ),
-                                );
-
-                                // Generate content based on prompt
-                              });
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 100),
-                              decoration: BoxDecoration(
-                                color: white,
-                                border: Border.all(color: black, width: 3),
+                          Expanded(
+                            child: Tooltip(
+                              message: "Water optimisation tips",
+                              child: InkWell(
                                 borderRadius: kBorderRadius,
-                                boxShadow: [
-                                  optimisationIsPressed ? BoxShadow() : kShadow,
-                                ],
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Center(
-                                  child: Text(
-                                    "Optimisation Tips",
-                                    style: subHeadingStyle,
+                                onTap: () {
+                                  setState(() {
+                                    optimisationIsPressed = true;
+                                  });
+                                  Future.delayed(
+                                    const Duration(milliseconds: 150),
+                                  ).then((value) async {
+                                    setState(() {
+                                      optimisationIsPressed = false;
+                                    });
+
+                                    // nav to optimisation tips view
+                                    await Navigator.push(
+                                      // ignore: use_build_context_synchronously
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            OptimisationTipsView(),
+                                      ),
+                                    );
+
+                                    // Generate content based on prompt
+                                  });
+                                },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 100),
+                                  decoration: BoxDecoration(
+                                    color: white,
+                                    border: Border.all(color: black, width: 3),
+                                    borderRadius: kBorderRadius,
+                                    boxShadow: [
+                                      optimisationIsPressed
+                                          ? BoxShadow()
+                                          : kShadow,
+                                    ],
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: Center(
+                                      child: Text(
+                                        "Optimisation Tips",
+                                        style: subHeadingStyle,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+
                 // Optimisation tips button
                 ConstrainedWidthWidget(
                   child: Row(
@@ -705,17 +992,8 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                                 setState(() {
                                   usageIsPressed = false;
                                 });
-
-                                // nav to optimisation tips view
-                                await Navigator.push(
-                                  // ignore: use_build_context_synchronously
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => WaterUsageView(),
-                                  ),
-                                );
-
-                                // Generate content based on prompt
+                                Navigator.pop(context);
+                                Navigator.pop(context);
                               });
                             },
                             child: AnimatedContainer(
@@ -751,4 +1029,31 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
       ),
     );
   }
+}
+
+// custom painter for the dashed line in legend
+class DashedLinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.orange
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    const dashWidth = 3.0;
+    const dashSpace = 2.0;
+    double startX = 0;
+
+    while (startX < size.width) {
+      canvas.drawLine(
+        Offset(startX, size.height / 2),
+        Offset(startX + dashWidth, size.height / 2),
+        paint,
+      );
+      startX += dashWidth + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

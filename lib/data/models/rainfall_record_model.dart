@@ -64,7 +64,6 @@ class RainfallRecord {
     for (int day = 1; day <= daysInMonth; day++) {
       final date = DateTime(year, month, day);
 
-      // TODO: Get real temps
       final temperature = _getSeasonalTemperature(month);
 
       // Add to daily data
@@ -81,7 +80,7 @@ class RainfallRecord {
     return dailyData;
   }
 
-  // TODO: get real temps
+  // Get seasonal temperature
   double _getSeasonalTemperature(int month) {
     // South Australian seasonal temperatures
     switch (month) {

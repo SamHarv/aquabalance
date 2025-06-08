@@ -516,7 +516,6 @@ class _TankInventoryViewState extends State<TankInventoryView> {
                   _buildTankCard(context, tankIndex),
 
                 // Calculate all tanks button
-                // TODO: validation check
                 Tooltip(
                   message: "Calculate capacity and inventory for all tanks",
                   child: ConstrainedWidthWidget(
@@ -909,7 +908,6 @@ class _TankInventoryViewState extends State<TankInventoryView> {
                       tankStates[tankIndex]['knowTankWaterLevel'] =
                           newSelection.first;
                     });
-                    // TODO: This is new standard
                     // Know tank level and capacity
                     if (tankStates[tankIndex]['knowTankWaterLevel']! &&
                         tankStates[tankIndex]['knowTankCapacity']!) {
@@ -995,7 +993,8 @@ class _TankInventoryViewState extends State<TankInventoryView> {
                 ),
                 ConstrainedWidthWidget(
                   child: SegmentedButton(
-                    selectedIcon: Icon(Icons.check, color: black),
+                    showSelectedIcon: false,
+                    // selectedIcon: Icon(Icons.check, color: black),
                     style: segButtonStyle,
                     segments: [
                       ButtonSegment(

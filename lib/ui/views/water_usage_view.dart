@@ -456,6 +456,7 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                                 ] else ...[
                                   // Segmented button for preset values
                                   SegmentedButton<int>(
+                                    showSelectedIcon: false,
                                     style: segButtonStyle,
                                     segments: [
                                       ButtonSegment(

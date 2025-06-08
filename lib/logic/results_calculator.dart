@@ -12,6 +12,7 @@ class ResultsCalculator {
   static Future<Map<String, dynamic>> calculateDaysRemaining({
     String rainfallScenario = "10-year median",
     double perPersonUsage = 200.0,
+    double comparisonUsage = 0.0,
   }) async {
     try {
       // Get current inventory from tanks
@@ -28,6 +29,7 @@ class ResultsCalculator {
         currentInventory: currentInventory,
         dailyUsage: dailyUsage,
         monthlyIntake: monthlyIntake,
+        comparisonUsage: comparisonUsage,
       );
 
       return results;
@@ -141,8 +143,6 @@ class ResultsCalculator {
 
       // Wait for all years to be fetched concurrently
       await Future.wait(fetchTasks);
-
-      // TODO: rainfall stats here
 
       print(monthlyRainfallData.toString());
 
@@ -343,6 +343,7 @@ class ResultsCalculator {
     required int currentInventory,
     required double dailyUsage,
     required Map<String, double> monthlyIntake,
+    double comparisonUsage = 0.0,
   }) {
     final currentMonth = DateTime.now().month;
     final monthNames = [
@@ -403,6 +404,14 @@ class ResultsCalculator {
       daysToProject: 90, // Project 3 months ahead
     );
 
+    // Calculate projected inventory levels for chart
+    final comparisonData = calculateProjectedLevels(
+      currentInventory: currentInventory,
+      dailyUsage: comparisonUsage,
+      monthlyIntake: monthlyIntake,
+      daysToProject: 90, // Project 3 months ahead
+    );
+
     return {
       'daysRemaining': daysRemaining,
       'currentInventory': currentInventory,
@@ -413,6 +422,7 @@ class ResultsCalculator {
       'message': message,
       'projectedData': projectedData,
       'monthlyIntake': monthlyIntake,
+      'comparisonData': comparisonData,
     };
   }
 

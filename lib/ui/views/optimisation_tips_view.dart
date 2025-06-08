@@ -141,6 +141,8 @@ class _OptimisationTipsViewState extends State<OptimisationTipsView> {
         line = line.replaceAll("••", "•");
       } else if (line.contains("•   ")) {
         line = line.replaceAll("•   ", "• ");
+      } else if (line.contains("• •")) {
+        line = line.replaceAll("• •", "•");
       }
       if (line.contains('**')) {
         // Remove the ** markers and make the text bold
@@ -219,10 +221,10 @@ class _OptimisationTipsViewState extends State<OptimisationTipsView> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Center(
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
             child: FutureBuilder(
               future: _output,
               builder: (context, snapshot) {

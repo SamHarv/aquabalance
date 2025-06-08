@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '/ui/widgets/constrained_width_widget.dart';
 
 import '../../config/constants.dart';
-import 'disclaimer_view.dart';
 
 class HomeView extends StatefulWidget {
   /// [HomeView] is the welcome screen of the app

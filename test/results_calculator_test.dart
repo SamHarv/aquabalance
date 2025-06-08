@@ -306,7 +306,6 @@ void main() {
           currentInventory: 10000,
           dailyUsage: 100.0, // Low usage
           monthlyIntake: monthlyIntake,
-          perPersonUsage: 100.0,
         );
 
         // Assert
@@ -337,7 +336,6 @@ void main() {
           currentInventory: 5000,
           dailyUsage: 200.0, // High usage
           monthlyIntake: monthlyIntake,
-          perPersonUsage: 200.0,
         );
 
         // Assert
@@ -368,7 +366,6 @@ void main() {
           currentInventory: 0,
           dailyUsage: 200.0,
           monthlyIntake: monthlyIntake,
-          perPersonUsage: 200.0,
         );
 
         // Assert
@@ -398,7 +395,6 @@ void main() {
           currentInventory: 5000,
           dailyUsage: 150.0,
           monthlyIntake: monthlyIntake,
-          perPersonUsage: 150.0,
         );
 
         // Assert
