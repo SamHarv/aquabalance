@@ -1,0 +1,67 @@
+Date : 2025-06-09 14:07:36
+Directory : /Users/samharvey/development/flutter_apps/aquabalance
+Total : 21 files,  -137 codes, -192 comments, -24 blanks, all -353 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| Swift    |          1 |         -2 |          0 |          0 |         -2 |
+| CMake    |          2 |         -2 |          0 |          0 |         -2 |
+| YAML     |          1 |         -2 |          0 |          0 |         -2 |
+| Markdown |          1 |         -4 |          0 |         -1 |         -5 |
+| C++      |          2 |         -7 |          0 |          0 |         -7 |
+| Dart     |         14 |       -120 |       -192 |        -23 |       -335 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                 | files      | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                    |         21 |       -137 |       -192 |        -24 |       -353 |
+| . (Files)                                                                                            |          2 |         -6 |          0 |         -1 |         -7 |
+| lib                                                                                                  |         13 |       -102 |       -191 |        -17 |       -310 |
+| lib (Files)                                                                                          |          1 |          0 |         -1 |         -1 |         -2 |
+| lib/config                                                                                           |          1 |          2 |          2 |          0 |          4 |
+| lib/logic                                                                                            |          2 |        -37 |         -7 |        -12 |        -56 |
+| lib/logic (Files)                                                                                    |          1 |         -9 |         -2 |         -6 |        -17 |
+| lib/logic/services                                                                                   |          1 |        -28 |         -5 |         -6 |        -39 |
+| lib/ui                                                                                               |          9 |        -67 |       -185 |         -4 |       -256 |
+| lib/ui/views                                                                                         |          8 |        -69 |       -185 |         -4 |       -258 |
+| lib/ui/widgets                                                                                       |          1 |          2 |          0 |          0 |          2 |
+| linux                                                                                                |          2 |         -5 |          0 |          0 |         -5 |
+| linux/flutter                                                                                        |          2 |         -5 |          0 |          0 |         -5 |
+| macos                                                                                                |          1 |         -2 |          0 |          0 |         -2 |
+| macos/Flutter                                                                                        |          1 |         -2 |          0 |          0 |         -2 |
+| test                                                                                                 |          1 |        -18 |         -1 |         -6 |        -25 |
+| windows                                                                                              |          2 |         -4 |          0 |          0 |         -4 |
+| windows/flutter                                                                                      |          2 |         -4 |          0 |          0 |         -4 |
++------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                                             | language | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| /Users/samharvey/development/flutter_apps/aquabalance/README.md                                      | Markdown |         -4 |          0 |         -1 |         -5 |
+| /Users/samharvey/development/flutter_apps/aquabalance/lib/config/constants.dart                      | Dart     |          2 |          2 |          0 |          4 |
+| /Users/samharvey/development/flutter_apps/aquabalance/lib/logic/results_calculator.dart              | Dart     |         -9 |         -2 |         -6 |        -17 |
+| /Users/samharvey/development/flutter_apps/aquabalance/lib/logic/services/url_launcher.dart           | Dart     |        -28 |         -5 |         -6 |        -39 |
+| /Users/samharvey/development/flutter_apps/aquabalance/lib/main.dart                                  | Dart     |          0 |         -1 |         -1 |         -2 |
+| /Users/samharvey/development/flutter_apps/aquabalance/lib/ui/views/home_view.dart                    | Dart     |          0 |         -1 |          0 |         -1 |
+| /Users/samharvey/development/flutter_apps/aquabalance/lib/ui/views/location_view.dart                | Dart     |        -18 |        -97 |         -4 |       -119 |
+| /Users/samharvey/development/flutter_apps/aquabalance/lib/ui/views/optimisation_tips_view.dart       | Dart     |        -38 |          2 |          0 |        -36 |
+| /Users/samharvey/development/flutter_apps/aquabalance/lib/ui/views/output_view.dart                  | Dart     |          7 |          8 |          0 |         15 |
+| /Users/samharvey/development/flutter_apps/aquabalance/lib/ui/views/roof_catchment_view.dart          | Dart     |          0 |         10 |          2 |         12 |
+| /Users/samharvey/development/flutter_apps/aquabalance/lib/ui/views/tank_inventory_view.dart          | Dart     |          0 |        -64 |         -1 |        -65 |
+| /Users/samharvey/development/flutter_apps/aquabalance/lib/ui/views/usage_comparison_view.dart        | Dart     |        -28 |         27 |          1 |          0 |
+| /Users/samharvey/development/flutter_apps/aquabalance/lib/ui/views/water_usage_view.dart             | Dart     |          8 |        -70 |         -2 |        -64 |
+| /Users/samharvey/development/flutter_apps/aquabalance/lib/ui/widgets/input_field_widget.dart         | Dart     |          2 |          0 |          0 |          2 |
+| /Users/samharvey/development/flutter_apps/aquabalance/linux/flutter/generated_plugin_registrant.cc   | C++      |         -4 |          0 |          0 |         -4 |
+| /Users/samharvey/development/flutter_apps/aquabalance/linux/flutter/generated_plugins.cmake          | CMake    |         -1 |          0 |          0 |         -1 |
+| /Users/samharvey/development/flutter_apps/aquabalance/macos/Flutter/GeneratedPluginRegistrant.swift  | Swift    |         -2 |          0 |          0 |         -2 |
+| /Users/samharvey/development/flutter_apps/aquabalance/pubspec.yaml                                   | YAML     |         -2 |          0 |          0 |         -2 |
+| /Users/samharvey/development/flutter_apps/aquabalance/test/results_calculator_test.dart              | Dart     |        -18 |         -1 |         -6 |        -25 |
+| /Users/samharvey/development/flutter_apps/aquabalance/windows/flutter/generated_plugin_registrant.cc | C++      |         -3 |          0 |          0 |         -3 |
+| /Users/samharvey/development/flutter_apps/aquabalance/windows/flutter/generated_plugins.cmake        | CMake    |         -1 |          0 |          0 |         -1 |
+| Total                                                                                                |          |       -137 |       -192 |        -24 |       -353 |
++------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+

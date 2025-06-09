@@ -22,12 +22,15 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
   // Determine whether the user knows their roof catchment
   bool knowRoofCatchment = false;
 
+  // Text controllers for roof catchment and other intake
   late final TextEditingController roofCatchmentController;
   late final TextEditingController otherIntakeController;
 
+  // Tank inventory and capacity to display results from previous page
   late final Future<int> tankInventory;
   late final Future<int> tankCapacity;
 
+  // Tank data to display results from previous page
   late final Future<List> tankData;
 
   // Data persist service
@@ -47,6 +50,7 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
     _loadSavedData();
   }
 
+  // Get tank data
   Future<List> _getTankData() async {
     List data = [];
     data.add(await tankInventory);
@@ -212,6 +216,7 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
       );
     }
 
+    // Width of screen
     final mediaWidth = MediaQuery.sizeOf(context).width;
     return Scaffold(
       appBar: buildAppBar(context, 3),
@@ -223,6 +228,7 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
               spacing: 32,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Summary from tank inventory calculation on prev page
                 FutureBuilder(
                   future: tankData,
                   builder: (context, snapshot) {
@@ -231,7 +237,6 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
                         child: Container(
                           decoration: BoxDecoration(
                             color: white,
-                            // border: Border.all(color: black, width: 3),
                             borderRadius: kBorderRadius,
                           ),
                           child: Padding(
@@ -246,6 +251,7 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
                                       "Tank Summary",
                                       style: inputFieldStyle,
                                     ),
+                                    // Tank inventory
                                     RichText(
                                       text: TextSpan(
                                         children: [
@@ -266,6 +272,7 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
                                         ],
                                       ),
                                     ),
+                                    // Tank capacity
                                     RichText(
                                       text: TextSpan(
                                         children: [
@@ -309,7 +316,7 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
                     style: headingStyle,
                   ),
                 ),
-                // Know catchment area?
+                // Enter roof catchment
                 ConstrainedWidthWidget(
                   child: Row(
                     children: [
@@ -412,6 +419,8 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
                     },
                   ),
                 ),
+
+                // Other water intake
                 ConstrainedWidthWidget(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -433,6 +442,7 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
                     ],
                   ),
                 ),
+                // Enter other water intake
                 ConstrainedWidthWidget(
                   child: InputFieldWidget(
                     label: "Other Intake (L/day)",
@@ -456,6 +466,8 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
                     },
                   ),
                 ),
+
+                // Button to continue to water usage calculations
                 Tooltip(
                   message: "Continue to next step",
                   child: ConstrainedBox(

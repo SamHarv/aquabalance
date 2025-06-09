@@ -7,8 +7,6 @@ import 'firebase_options.dart';
 import 'config/constants.dart';
 import 'ui/views/home_view.dart';
 
-// flutter run -d chrome --web-experimental-hot-reload
-
 /// [main] function is entry point of the app
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

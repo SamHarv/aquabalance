@@ -27,13 +27,11 @@ class _LocationViewState extends State<LocationView> {
   // Postcode selection to choose location
   String? selectedPostcode;
 
+  // Postcode text controller
   late final TextEditingController postcodeController;
 
   // Chart data
   List<MonthlyRainfall>? monthlyRainfallData;
-  double? annualRainfall;
-  bool isLoadingChart = false;
-  String? chartError;
 
   // Instant access to hardcoded postcodes
   List<String> availablePostcodes = PostcodesService.getAvailablePostcodes();
@@ -62,7 +60,7 @@ class _LocationViewState extends State<LocationView> {
 
       // Load chart data if postcode is selected
       if (selectedPostcode != null) {
-        _loadChartData();
+        _loadRainfallData();
       }
     } catch (e) {
       setState(() {
@@ -74,7 +72,7 @@ class _LocationViewState extends State<LocationView> {
   }
 
   // Load chart data using DatabaseService - no more duplication!
-  Future<void> _loadChartData() async {
+  Future<void> _loadRainfallData() async {
     if (selectedPostcode == null) return;
 
     // Limit years to 1975-current
@@ -82,11 +80,6 @@ class _LocationViewState extends State<LocationView> {
       1975,
       DateTime.now().year,
     );
-
-    setState(() {
-      isLoadingChart = true;
-      chartError = null;
-    });
 
     try {
       // Use DatabaseService instead of direct API call
@@ -99,21 +92,10 @@ class _LocationViewState extends State<LocationView> {
       );
 
       setState(() {
-        if (timePeriod == "Monthly") {
-          monthlyRainfallData = rainfallData['monthlyData'];
-          annualRainfall = null;
-        } else {
-          annualRainfall = rainfallData['annualTotal'];
-          monthlyRainfallData = null;
-        }
-        isLoadingChart = false;
+        monthlyRainfallData = rainfallData['monthlyData'];
       });
       print("Success!");
     } catch (e) {
-      setState(() {
-        chartError = 'Failed to load rainfall data: ${e.toString()}';
-        isLoadingChart = false;
-      });
       throw "Could not retrieve data for $selectedPostcode!";
     }
   }
@@ -251,7 +233,7 @@ class _LocationViewState extends State<LocationView> {
                         _saveData();
                         try {
                           // Load data after postcode is selected
-                          _loadChartData();
+                          _loadRainfallData();
                         } catch (e) {
                           _showAlertDialog(
                             "Failed to load rainfall data: ${e.toString()}",
@@ -262,110 +244,9 @@ class _LocationViewState extends State<LocationView> {
                   ),
                 ),
 
-                // // Show loading/error states for debugging
-                // if (isLoadingChart)
-                //   Container(
-                //     padding: EdgeInsets.all(16),
-                //     decoration: BoxDecoration(
-                //       color: Colors.blue.shade50,
-                //       border: Border.all(color: Colors.blue, width: 2),
-                //       borderRadius: kBorderRadius,
-                //     ),
-                //     child: Row(
-                //       mainAxisAlignment: MainAxisAlignment.center,
-                //       children: [
-                //         SizedBox(
-                //           width: 20,
-                //           height: 20,
-                //           child: CircularProgressIndicator(
-                //             strokeWidth: 2,
-                //             color: Colors.blue,
-                //           ),
-                //         ),
-                //         SizedBox(width: 12),
-                //         Text(
-                //           "Loading rainfall data...",
-                //           style: TextStyle(color: Colors.blue.shade800),
-                //         ),
-                //       ],
-                //     ),
-                //   ),
-
-                // if (chartError != null)
-                //   Container(
-                //     padding: EdgeInsets.all(16),
-                //     decoration: BoxDecoration(
-                //       color: Colors.red.shade50,
-                //       border: Border.all(color: Colors.red, width: 2),
-                //       borderRadius: kBorderRadius,
-                //     ),
-                //     child: Column(
-                //       children: [
-                //         Row(
-                //           mainAxisAlignment: MainAxisAlignment.center,
-                //           children: [
-                //             Icon(Icons.error, color: Colors.red),
-                //             SizedBox(width: 8),
-                //             Expanded(
-                //               child: Text(
-                //                 chartError!,
-                //                 style: TextStyle(color: Colors.red.shade800),
-                //               ),
-                //             ),
-                //           ],
-                //         ),
-                //         SizedBox(height: 8),
-                //         ElevatedButton(
-                //           onPressed: _loadChartData,
-                //           style: ElevatedButton.styleFrom(
-                //             backgroundColor: Colors.red,
-                //             foregroundColor: white,
-                //           ),
-                //           child: Text("Retry"),
-                //         ),
-                //       ],
-                //     ),
-                //   ),
-
-                // // Show data summary if loaded successfully
-                // if (!isLoadingChart &&
-                //     chartError == null &&
-                //     selectedPostcode != null)
-                //   Container(
-                //     padding: EdgeInsets.all(16),
-                //     decoration: BoxDecoration(
-                //       color: Colors.green.shade50,
-                //       border: Border.all(color: Colors.green, width: 2),
-                //       borderRadius: kBorderRadius,
-                //     ),
-                //     child: Column(
-                //       children: [
-                //         Text(
-                //           "Data loaded for $selectedPostcode",
-                //           style: TextStyle(
-                //             color: Colors.green.shade800,
-                //             fontWeight: FontWeight.bold,
-                //           ),
-                //         ),
-                //         SizedBox(height: 8),
-                //         if (timePeriod == "Monthly" &&
-                //             monthlyRainfallData != null)
-                //           Text(
-                //             "Monthly data: ${monthlyRainfallData!.map((m) => m.totalRainfall).reduce((a, b) => a + b).toStringAsFixed(1)}mm total",
-                //             style: TextStyle(color: Colors.green.shade700),
-                //           ),
-                //         if (timePeriod == "Annual" && annualRainfall != null)
-                //           Text(
-                //             "Annual rainfall: ${annualRainfall!.toStringAsFixed(1)}mm",
-                //             style: TextStyle(color: Colors.green.shade700),
-                //           ),
-                //       ],
-                //     ),
-                //   ),
-
                 // Continue button
                 Tooltip(
-                  message: "Continue to next step",
+                  message: "Continue to tank inventory calculator",
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: 500),
                     child: InkWell(

@@ -77,10 +77,12 @@ const kShadow = BoxShadow(
   blurStyle: BlurStyle.solid,
 );
 
-// Build app bar
-AppBar buildAppBar(BuildContext context, int step) {
+// Build consistent app bar
+AppBar buildAppBar(BuildContext context, int? step) {
   return AppBar(
-    title: Text("Step $step of 5", style: inputFieldStyle),
+    title: step == null
+        ? SizedBox.shrink()
+        : Text("Step $step of 5", style: inputFieldStyle),
     toolbarHeight: 80,
     backgroundColor: Colors.transparent,
     automaticallyImplyLeading: true,
@@ -120,6 +122,8 @@ AppBar buildAppBar(BuildContext context, int step) {
   );
 }
 
+// Number formatter to add commas to large numbers
 final formatter = NumberFormat('#,##0');
 
+// Annual rainfall total for last year for optimisation tips
 double lastYearTotal = 0;

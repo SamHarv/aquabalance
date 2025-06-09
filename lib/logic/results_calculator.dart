@@ -99,6 +99,7 @@ class ResultsCalculator {
       // Default to Adelaide
       final postcode = locationData['postcode'] ?? "5000";
 
+      // Get current year
       final currentYear = DateTime.now().year;
 
       // Initialise stats structure
@@ -144,7 +145,11 @@ class ResultsCalculator {
       // Wait for all years to be fetched concurrently
       await Future.wait(fetchTasks);
 
-      print(monthlyRainfallData.toString());
+      // Get last year's rainfall for optimisation tips view later
+      lastYearTotal = 0.0;
+      monthlyRainfallData.forEach((key, value) {
+        lastYearTotal += value.last;
+      });
 
       // Calculate statistics for each month
       monthlyRainfallData.forEach((month, rainfallValues) {
@@ -159,16 +164,9 @@ class ResultsCalculator {
         }
       });
 
-      // get last year's annual rainfall
-      final lastYear = monthlyRainfallData.values.last;
-      // sum last year's rainfall
-      lastYearTotal = lastYear.fold<double>(0, (sum, value) => sum + value);
-
-      print(monthlyStats.toString());
       return monthlyStats;
     } catch (e) {
       // Return empty stats if error occurs
-      print("Error getting rainfall for this postcode!!!!");
       return {
         'Jan': {'min': 0.0, 'median': 0.0, 'max': 0.0},
         'Feb': {'min': 0.0, 'median': 0.0, 'max': 0.0},

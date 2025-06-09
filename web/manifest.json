@@ -1,11 +1,11 @@
 {
-    "name": "aquabalance",
+    "name": "AquaBalance",
     "short_name": "aquabalance",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#00C3FF",
     "theme_color": "#00C3FF",
-    "description": "A new Flutter project.",
+    "description": "A tank water management tool.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

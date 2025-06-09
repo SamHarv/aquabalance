@@ -93,7 +93,6 @@ class _HomeViewState extends State<HomeView> {
                       child: Text(
                         "Helping communities conserve precious water through "
                         "predictive modelling and education.",
-                        // textAlign: TextAlign.center,
                         style: subHeadingStyle,
                       ),
                     ),
@@ -117,7 +116,7 @@ class _HomeViewState extends State<HomeView> {
                           setState(() {
                             isPressed = false;
                           });
-                          // navigate to disclaimer view
+                          // navigate to location view
                           Navigator.push(
                             // ignore: use_build_context_synchronously
                             context,

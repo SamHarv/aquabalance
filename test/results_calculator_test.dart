@@ -570,31 +570,6 @@ void main() {
       });
     });
 
-    group('getAvailableScenarios', () {
-      test('should return default scenarios when no data available', () async {
-        final result = await ResultsCalculator.getAvailableScenarios();
-
-        expect(result, isA<List<String>>());
-        expect(result, contains('No Rainfall'));
-        expect(result, contains('10-year median'));
-      });
-
-      test('should return all scenarios when data is available', () async {
-        // This would need proper mocking to return meaningful rainfall data
-        final result = await ResultsCalculator.getAvailableScenarios();
-
-        expect(result, isA<List<String>>());
-        expect(result.length, greaterThanOrEqualTo(2));
-      });
-
-      test('should handle errors gracefully', () async {
-        final result = await ResultsCalculator.getAvailableScenarios();
-
-        expect(result, isA<List<String>>());
-        expect(result.isNotEmpty, isTrue);
-      });
-    });
-
     group('Rainfall scenario handling', () {
       test('should handle "No Rainfall" scenario', () async {
         try {

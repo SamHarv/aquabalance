@@ -19,9 +19,12 @@ class _WaterUsageViewState extends State<WaterUsageView> {
   // Data persist service
   final _dataPersistService = DataPersistService();
 
+  // Text controller for number of people in household
   late final TextEditingController numOfPeopleController;
-  bool isPressed = false;
   int numOfPeople = 0;
+
+  // Button state for press animation
+  bool isPressed = false;
 
   // List to store individual water usage for each person
   List<int> personWaterUsageList = [];
@@ -233,14 +236,14 @@ class _WaterUsageViewState extends State<WaterUsageView> {
 
       final usage = int.parse(value);
       if (usage < 0 || usage > 1500) {
-        showAlertDialog("Please enter a value between 0 and 1500 litres");
+        _showAlertDialog("Please enter a value between 0 and 1500 litres");
         return;
       }
 
       _updatePersonUsage(personIndex, usage);
     } catch (e) {
       if (value.isNotEmpty) {
-        showAlertDialog("Please enter a valid number between 0 and 1500");
+        _showAlertDialog("Please enter a valid number between 0 and 1500");
       }
     }
   }
@@ -251,7 +254,7 @@ class _WaterUsageViewState extends State<WaterUsageView> {
   }
 
   // Show alert dialog with message
-  void showAlertDialog(String message) {
+  void _showAlertDialog(String message) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -309,6 +312,7 @@ class _WaterUsageViewState extends State<WaterUsageView> {
       );
     }
 
+    // Width of screen
     final mediaWidth = MediaQuery.sizeOf(context).width;
     return Scaffold(
       appBar: buildAppBar(context, 4),
@@ -329,6 +333,7 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                     style: inputFieldStyle,
                   ),
                 ),
+                // Num of people input
                 ConstrainedWidthWidget(
                   child: InputFieldWidget(
                     floatingLabel: false,
@@ -341,7 +346,7 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                           final n = int.parse(number);
                           if (n < 1 || n > 20) {
                             if (number.isNotEmpty) {
-                              showAlertDialog(
+                              _showAlertDialog(
                                 "Please enter a number of people between 1 and 20",
                               );
                             }
@@ -351,7 +356,7 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                         }
                       } catch (e) {
                         if (number.isNotEmpty) {
-                          showAlertDialog(
+                          _showAlertDialog(
                             "Please enter a valid number of people between 1 and 20",
                           );
                         }
@@ -455,68 +460,76 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                                   ),
                                 ] else ...[
                                   // Segmented button for preset values
-                                  SegmentedButton<int>(
-                                    showSelectedIcon: false,
-                                    style: segButtonStyle,
-                                    segments: [
-                                      ButtonSegment(
-                                        value: 100,
-                                        label: Padding(
-                                          padding: const EdgeInsets.all(12),
-                                          child: Column(
-                                            children: [
-                                              Text("Low"),
-                                              Text(
-                                                "100L",
-                                                style: TextStyle(fontSize: 12),
-                                              ),
-                                            ],
+                                  ConstrainedWidthWidget(
+                                    child: SegmentedButton<int>(
+                                      showSelectedIcon: false,
+                                      style: segButtonStyle,
+                                      segments: [
+                                        ButtonSegment(
+                                          value: 100,
+                                          label: Padding(
+                                            padding: const EdgeInsets.all(12),
+                                            child: Column(
+                                              children: [
+                                                Text("Low"),
+                                                Text(
+                                                  "100L",
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      ButtonSegment(
-                                        value: 200,
-                                        label: Padding(
-                                          padding: const EdgeInsets.all(12),
-                                          child: Column(
-                                            children: [
-                                              Text("Avg"),
-                                              Text(
-                                                "200L",
-                                                style: TextStyle(fontSize: 12),
-                                              ),
-                                            ],
+                                        ButtonSegment(
+                                          value: 200,
+                                          label: Padding(
+                                            padding: const EdgeInsets.all(12),
+                                            child: Column(
+                                              children: [
+                                                Text("Avg"),
+                                                Text(
+                                                  "200L",
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      ButtonSegment(
-                                        value: 300,
-                                        label: Padding(
-                                          padding: const EdgeInsets.all(12),
-                                          child: Column(
-                                            children: [
-                                              Text("High"),
-                                              Text(
-                                                "300L",
-                                                style: TextStyle(fontSize: 12),
-                                              ),
-                                            ],
+                                        ButtonSegment(
+                                          value: 300,
+                                          label: Padding(
+                                            padding: const EdgeInsets.all(12),
+                                            child: Column(
+                                              children: [
+                                                Text("High"),
+                                                Text(
+                                                  "300L",
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                    selected: {
-                                      // Only show selection if current value matches a preset
-                                      if ([
-                                        100,
-                                        200,
-                                        300,
-                                      ].contains(personWaterUsageList[i]))
-                                        personWaterUsageList[i],
-                                    },
-                                    onSelectionChanged: (value) {
-                                      _updatePersonUsage(i, value.first);
-                                    },
+                                      ],
+                                      selected: {
+                                        // Only show selection if current value matches a preset
+                                        if ([
+                                          100,
+                                          200,
+                                          300,
+                                        ].contains(personWaterUsageList[i]))
+                                          personWaterUsageList[i],
+                                      },
+                                      onSelectionChanged: (value) {
+                                        _updatePersonUsage(i, value.first);
+                                      },
+                                    ),
                                   ),
                                 ],
                               ],
@@ -557,7 +570,7 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                                   color: black,
                                 ),
                                 tooltip: "Disclaimer",
-                                onPressed: () => showAlertDialog(
+                                onPressed: () => _showAlertDialog(
                                   "This tool uses calculations to estimate water "
                                   "intake and usage, and may not reflect actual "
                                   "measures. Results should not be relied "
@@ -569,6 +582,7 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                             ],
                           ),
                           SizedBox(height: 8),
+                          // Total litres per day output
                           Text(
                             "${formatter.format(_calculateTotalUsage())} litres per day",
                             style: TextStyle(
@@ -612,84 +626,6 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                               ),
                             );
                           });
-
-                          // final totalWaterUsage = _calculateTotalUsage();
-
-                          // // Show dialog with results that enables nav to output page
-                          // showDialog(
-                          //   context: context,
-                          //   builder: (context) => AlertDialog(
-                          //     shape: RoundedRectangleBorder(
-                          //       borderRadius: kBorderRadius,
-                          //       side: kBorderSide,
-                          //     ),
-                          //     title: Text(
-                          //       'Water Usage Results',
-                          //       style: subHeadingStyle,
-                          //     ),
-                          //     content: SingleChildScrollView(
-                          //       child: Column(
-                          //         mainAxisSize: MainAxisSize.min,
-                          //         crossAxisAlignment: CrossAxisAlignment.start,
-                          //         children: [
-                          //           Text(
-                          //             "Household Summary:",
-                          //             style: TextStyle(
-                          //               fontSize: 16,
-                          //               fontWeight: FontWeight.bold,
-                          //               color: black,
-                          //             ),
-                          //           ),
-                          //           SizedBox(height: 8),
-                          //           for (int i = 0; i < numOfPeople; i++)
-                          //             if (i < personWaterUsageList.length)
-                          //               Padding(
-                          //                 padding: const EdgeInsets.symmetric(
-                          //                   vertical: 2,
-                          //                 ),
-                          //                 child: Text(
-                          //                   "Person ${i + 1}: ${formatter.format(personWaterUsageList[i])}L/day",
-                          //                   style: TextStyle(fontSize: 14),
-                          //                 ),
-                          //               ),
-                          //           Divider(),
-                          //           Text(
-                          //             "Total: ${formatter.format(totalWaterUsage)} litres per day",
-                          //             style: TextStyle(
-                          //               fontSize: 16,
-                          //               fontWeight: FontWeight.bold,
-                          //               color: Colors.blue.shade800,
-                          //             ),
-                          //           ),
-                          //         ],
-                          //       ),
-                          //     ),
-                          //     actions: [
-                          //       TextButton(
-                          //         onPressed: () => Navigator.of(context).pop(),
-                          //         child: const Text(
-                          //           "Back",
-                          //           style: TextStyle(color: black),
-                          //         ),
-                          //       ),
-                          //       TextButton(
-                          //         onPressed: () {
-                          //           Navigator.of(context).pop();
-
-                          //           // Save data before navigating
-                          //           _saveData();
-                          //         },
-                          //         child: const Text(
-                          //           "Continue",
-                          //           style: TextStyle(
-                          //             color: black,
-                          //             fontWeight: FontWeight.bold,
-                          //           ),
-                          //         ),
-                          //       ),
-                          //     ],
-                          //   ),
-                          // );
                         },
                         child: AnimatedContainer(
                           width: mediaWidth * 0.8,

@@ -35,8 +35,10 @@ class _InputFieldWidgetState extends State<InputFieldWidget> {
             ? null
             : Text(widget.label, style: inputFieldStyle),
         floatingLabelBehavior: widget.floatingLabel
-            ? FloatingLabelBehavior.auto
-            : FloatingLabelBehavior.never, // Removed floating label
+            ? FloatingLabelBehavior
+                  .auto // Display floating label
+            : FloatingLabelBehavior
+                  .never, // Remove floating label (when background not white)
         border: inputBorder,
         enabledBorder: inputBorder,
         focusedBorder: inputBorder,

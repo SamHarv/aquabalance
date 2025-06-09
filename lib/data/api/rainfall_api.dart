@@ -92,10 +92,9 @@ class RainfallApiService {
       if (month != null) queryParams['month'] = month.toString();
 
       // Add query parameters to URI
-      final targetUrl =
-          Uri.parse(
-            '$_baseUrl/get_rainfall',
-          ).replace(queryParameters: queryParams).toString();
+      final targetUrl = Uri.parse(
+        '$_baseUrl/get_rainfall',
+      ).replace(queryParameters: queryParams).toString();
 
       // Try multiple CORS proxy services in event of failure
       final proxies = [

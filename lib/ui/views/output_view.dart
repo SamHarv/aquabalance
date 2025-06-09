@@ -9,7 +9,7 @@ import '/ui/widgets/constrained_width_widget.dart';
 import '/config/constants.dart';
 
 class OutputView extends StatefulWidget {
-  /// [OutputView] to display results of tool
+  /// [OutputView] to display results
   const OutputView({super.key});
 
   @override
@@ -17,8 +17,8 @@ class OutputView extends StatefulWidget {
 }
 
 class _OutputViewState extends State<OutputView> {
+  // Button states for press animation
   bool isPressed = false;
-  // bool optimisationIsPressed = false;
   bool usageIsPressed = false;
 
   // Results data
@@ -38,12 +38,13 @@ class _OutputViewState extends State<OutputView> {
 
   // Loading state
   bool isLoading = true;
+  // Error message
   String? errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _calculateResults();
+    _calculateResults(); // initialise results
   }
 
   // Show alert dialog
@@ -82,6 +83,7 @@ class _OutputViewState extends State<OutputView> {
       // Get tank summary
       final summary = await ResultsCalculator.getTankSummary();
 
+      // Assign results
       setState(() {
         daysLeft = results['daysRemaining'] ?? 0;
         currentInventory = results['currentInventory'] ?? 0;
@@ -122,115 +124,123 @@ class _OutputViewState extends State<OutputView> {
         .reduce((a, b) => a > b ? a : b);
     final maxY = maxLevel > 0 ? maxLevel * 1.2 : 1000.0;
 
-    return SizedBox(
-      height: 250,
-      child: LineChart(
-        LineChartData(
-          gridData: FlGridData(
-            show: true,
-            drawVerticalLine: false,
-            horizontalInterval: maxY / 5,
-            getDrawingHorizontalLine: (value) {
-              return FlLine(color: Colors.grey.shade300, strokeWidth: 1);
-            },
-          ),
-          titlesData: FlTitlesData(
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 50,
-                getTitlesWidget: (value, meta) {
-                  return Text(
-                    '${(value / 1000).toStringAsFixed(0)}k',
-                    style: TextStyle(
-                      color: black,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  );
-                },
-              ),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: SizedBox(
+        height: 250,
+        child: LineChart(
+          LineChartData(
+            // Horizontal lines
+            gridData: FlGridData(
+              show: true,
+              drawVerticalLine: false,
+              horizontalInterval: maxY / 5,
+              getDrawingHorizontalLine: (value) {
+                return FlLine(color: Colors.grey.shade300, strokeWidth: 1);
+              },
             ),
-            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 30,
-                interval: projectedData.length / 6,
-                getTitlesWidget: (value, meta) {
-                  final index = value.toInt();
-                  if (index >= 0 && index < projectedData.length) {
+            titlesData: FlTitlesData(
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  maxIncluded:
+                      false, // Don't show max line to avoid cluttered labels
+                  reservedSize: 50,
+                  getTitlesWidget: (value, meta) {
                     return Text(
-                      projectedData[index]['dateFormatted'], // 00 Mmm format
+                      '${(value / 1000).toStringAsFixed(0)}k',
                       style: TextStyle(
                         color: black,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
                     );
-                  }
-                  return Text('');
-                },
+                  },
+                ),
               ),
-            ),
-          ),
-          borderData: FlBorderData(
-            show: true,
-            border: Border(
-              bottom: BorderSide(color: black, width: 2),
-              left: BorderSide(color: black, width: 2),
-            ),
-          ),
-          minX: 0,
-          maxX: projectedData.length.toDouble() - 1,
-          minY: 0,
-          maxY: maxY,
-          lineBarsData: [
-            LineChartBarData(
-              spots: projectedData.asMap().entries.map((entry) {
-                return FlSpot(
-                  entry.key.toDouble(),
-                  entry.value['waterLevel'].toDouble(),
-                );
-              }).toList(),
-              isCurved: true,
-              gradient: LinearGradient(
-                colors: [blue, isIncreasing ? Colors.green : Colors.red],
+              rightTitles: AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
               ),
-              barWidth: 3,
-              isStrokeCapRound: true,
-              dotData: FlDotData(show: false),
-              belowBarData: BarAreaData(
-                show: true,
-                gradient: LinearGradient(
-                  colors: [
-                    blue.withValues(alpha: 0.3),
-                    (isIncreasing ? Colors.green : Colors.red).withValues(
-                      alpha: 0.1,
-                    ),
-                  ],
+              topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 30,
+                  interval: projectedData.length / 6,
+                  getTitlesWidget: (value, meta) {
+                    final index = value.toInt();
+                    if (index >= 0 && index < projectedData.length) {
+                      return Text(
+                        projectedData[index]['dateFormatted'], // 00 Mmm format
+                        style: TextStyle(
+                          color: black,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    }
+                    return Text('');
+                  },
                 ),
               ),
             ),
-          ],
-          lineTouchData: LineTouchData(
-            enabled: true,
-            touchTooltipData: LineTouchTooltipData(
-              getTooltipItems: (touchedSpots) {
-                return touchedSpots.map((spot) {
-                  final index = spot.x.toInt();
-                  if (index < projectedData.length) {
-                    final data = projectedData[index];
-                    final date = DateTime.parse(data['date']);
-                    return LineTooltipItem(
-                      '${date.day}/${date.month}\n${data['waterLevel']}L',
-                      TextStyle(color: white, fontSize: 12),
-                    );
-                  }
-                  return null;
-                }).toList();
-              },
+            borderData: FlBorderData(
+              show: true,
+              border: Border(
+                bottom: BorderSide(color: black, width: 2),
+                left: BorderSide(color: black, width: 2),
+              ),
+            ),
+            minX: 0,
+            maxX: projectedData.length.toDouble() - 1,
+            minY: 0,
+            maxY: maxY,
+            lineBarsData: [
+              LineChartBarData(
+                spots: projectedData.asMap().entries.map((entry) {
+                  return FlSpot(
+                    entry.key.toDouble(),
+                    entry.value['waterLevel'].toDouble(),
+                  );
+                }).toList(),
+                isCurved: true,
+                gradient: LinearGradient(
+                  colors: [blue, isIncreasing ? Colors.green : Colors.red],
+                ),
+                barWidth: 3,
+                isStrokeCapRound: true,
+                dotData: FlDotData(show: false),
+                belowBarData: BarAreaData(
+                  show: true,
+                  gradient: LinearGradient(
+                    colors: [
+                      blue.withValues(alpha: 0.3),
+                      (isIncreasing ? Colors.green : Colors.red).withValues(
+                        alpha: 0.1,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            lineTouchData: LineTouchData(
+              enabled: true,
+              touchTooltipData: LineTouchTooltipData(
+                getTooltipItems: (touchedSpots) {
+                  return touchedSpots.map((spot) {
+                    final index = spot.x.toInt();
+                    if (index < projectedData.length) {
+                      final data = projectedData[index];
+                      final date = DateTime.parse(data['date']);
+                      return LineTooltipItem(
+                        '${date.day}/${date.month}\n${data['waterLevel']}L',
+                        TextStyle(color: white, fontSize: 12),
+                      );
+                    }
+                    return null;
+                  }).toList();
+                },
+              ),
             ),
           ),
         ),
@@ -337,6 +347,7 @@ class _OutputViewState extends State<OutputView> {
                         ),
                       ),
                       SizedBox(height: 8),
+                      // Current inventory
                       Text(
                         "${formatter.format(currentInventory)}L",
                         style: TextStyle(
@@ -373,6 +384,7 @@ class _OutputViewState extends State<OutputView> {
                         ),
                       ),
                       SizedBox(height: 8),
+                      // Daily change in inventory
                       Text(
                         "${netDailyChange >= 0 ? '+' : ''}${formatter.format(netDailyChange.toInt())}L",
                         style: TextStyle(
@@ -468,7 +480,7 @@ class _OutputViewState extends State<OutputView> {
 
                       SizedBox(height: 8),
 
-                      // Rainfall pattern dropdown
+                      // Rainfall scenario dropdown
                       ConstrainedWidthWidget(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -477,7 +489,7 @@ class _OutputViewState extends State<OutputView> {
                             Expanded(
                               child: Tooltip(
                                 message:
-                                    "Select assumed rainfall pattern for projections",
+                                    "Select assumed rainfall scenario for projections",
                                 child: DropdownMenu<String>(
                                   width: double.infinity,
                                   //mediaWidth * 0.8,
@@ -501,7 +513,7 @@ class _OutputViewState extends State<OutputView> {
                                     ),
                                   ],
                                   label: Text(
-                                    "Rainfall Pattern",
+                                    "Rainfall Scenario",
                                     style: inputFieldStyle,
                                   ),
                                   menuStyle: MenuStyle(
@@ -545,7 +557,7 @@ class _OutputViewState extends State<OutputView> {
                             // Question mark icon to launch dialog to explain patterns
                             IconButton(
                               icon: Icon(Icons.help, color: white),
-                              tooltip: "Learn more about rainfall patterns",
+                              tooltip: "Learn more about rainfall scenarios",
                               onPressed: () => _showAlertDialog(
                                 "Assumed rainfall scenario is the assumption made about "
                                 "rainfall in your area based on data from the "
@@ -604,6 +616,7 @@ class _OutputViewState extends State<OutputView> {
                       children: [
                         Text("Daily Water Balance", style: subHeadingStyle),
                         SizedBox(height: 12),
+                        // Water intake (rain, etc.)
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -622,6 +635,7 @@ class _OutputViewState extends State<OutputView> {
                           ],
                         ),
                         SizedBox(height: 4),
+                        // Water usage
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -640,6 +654,7 @@ class _OutputViewState extends State<OutputView> {
                           ],
                         ),
                         Divider(),
+                        // Net daily change
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -667,7 +682,7 @@ class _OutputViewState extends State<OutputView> {
                   ),
                 ),
 
-                // Start again button
+                // Water usage comparison button
                 Tooltip(
                   message:
                       "Compare your water usage with different usage levels.",

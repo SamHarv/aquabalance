@@ -32,10 +32,11 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
   bool isIncreasing = false;
   String resultMessage = "";
   List<Map<String, dynamic>> projectedData = [];
-  Map<String, double> monthlyIntakeData = {}; // Add this line
+  Map<String, double> monthlyIntakeData = {};
   Map<String, dynamic> tankSummary = {};
   int annualRainfall = 0;
 
+  // Comparison data
   double comparisonUsage = 0;
   dynamic comparisonDaysLeft = 0;
   String comparisonResultMessage = "";
@@ -45,12 +46,18 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
 
   // Loading state
   bool isLoading = true;
+
+  // Message to display on error
   String? errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _calculateResults();
+    _calculateResults().then((_) {
+      _calculateComparisonDaysRemaining();
+    }); // Calculate results to initialise values
+
+    // Get comparison vs current % difference
     comparisonResultMessage = getComparisonDifference(
       dailyUsage,
       comparisonUsage,
@@ -81,17 +88,22 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
   String getComparisonDifference(double current, double comparison) {
     double percDiff = 0;
     if (comparison == 0) {
+      // Comparison usage is 100% less than current
       percDiff = -100;
     } else if (current == 0) {
+      // Comparison usage is 100% more than current
       percDiff = 100;
     } else {
+      // Calculate the percentage difference (can be negative)
       percDiff = ((comparison - current) / current) * 100;
     }
 
     if (percDiff > 0) {
+      // Comparison usage is greater than current
       percDiff = percDiff.abs();
       return "${percDiff.toInt()}% greater than current usage";
     } else {
+      // Comparison usage is less than or equal to current
       percDiff = percDiff.abs();
       return "${percDiff.toInt()}% less than current usage";
     }
@@ -113,6 +125,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
       // Get tank summary
       final summary = await ResultsCalculator.getTankSummary();
 
+      // Assign results
       setState(() {
         daysLeft = results['daysRemaining'] ?? 0;
         currentInventory = results['currentInventory'] ?? 0;
@@ -123,8 +136,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
         isIncreasing = results['isIncreasing'] ?? false;
         resultMessage = results['message'] ?? "";
         projectedData = results['projectedData'] ?? [];
-        monthlyIntakeData =
-            results['monthlyIntake'] ?? {}; // Store the monthly intake data
+        monthlyIntakeData = results['monthlyIntake'] ?? {};
         tankSummary = summary;
         isLoading = false;
       });
@@ -161,6 +173,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
     final daysToProject = 90; // Same as original projection
 
     for (int day = 0; day <= daysToProject; day++) {
+      // Daily increments
       final projectedDate = startDate.add(Duration(days: day));
       final monthIndex = projectedDate.month - 1;
       final monthName = monthNames[monthIndex];
@@ -176,7 +189,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
       final dailyIntakeForThisMonth =
           monthlyIntakeData[monthName]! / daysInMonth;
 
-      // Update water level with comparison usage instead of current usage
+      // Update water level with comparison usage
       currentLevel += (dailyIntakeForThisMonth - comparisonUsage);
 
       // Ensure level doesn't go below 0
@@ -221,104 +234,85 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
       ...comparisonProjectedData.map((d) => d['waterLevel'] as int),
     ].reduce((a, b) => a > b ? a : b);
 
+    // Add 20% to max value for chart height
     final maxY = maxLevel > 0 ? maxLevel * 1.2 : 1000.0;
 
-    return SizedBox(
-      height: 250,
-      child: LineChart(
-        LineChartData(
-          gridData: FlGridData(
-            show: true,
-            drawVerticalLine: false,
-            horizontalInterval: maxY / 5,
-            getDrawingHorizontalLine: (value) {
-              return FlLine(color: Colors.grey.shade300, strokeWidth: 1);
-            },
-          ),
-          titlesData: FlTitlesData(
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 50,
-                getTitlesWidget: (value, meta) {
-                  return Text(
-                    '${(value / 1000).toStringAsFixed(0)}k',
-                    style: TextStyle(
-                      color: black,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  );
-                },
-              ),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: SizedBox(
+        height: 250,
+        child: LineChart(
+          LineChartData(
+            clipData: FlClipData.all(),
+            // Horizontal lines
+            gridData: FlGridData(
+              show: true,
+              drawVerticalLine: false,
+              horizontalInterval: maxY / 5,
+              getDrawingHorizontalLine: (value) {
+                return FlLine(color: Colors.grey.shade300, strokeWidth: 1);
+              },
             ),
-            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 30,
-                interval: projectedData.length / 6,
-                getTitlesWidget: (value, meta) {
-                  final index = value.toInt();
-                  if (index >= 0 && index < projectedData.length) {
+            titlesData: FlTitlesData(
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  maxIncluded:
+                      false, // Don't show max line to avoid cluttered labels
+                  showTitles: true,
+                  reservedSize: 50, // Space for labels
+                  getTitlesWidget: (value, meta) {
                     return Text(
-                      projectedData[index]['dateFormatted'],
+                      '${(value / 1000).toStringAsFixed(0)}k',
                       style: TextStyle(
                         color: black,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
                     );
-                  }
-                  return Text('');
-                },
+                  },
+                ),
               ),
-            ),
-          ),
-          borderData: FlBorderData(
-            show: true,
-            border: Border(
-              bottom: BorderSide(color: black, width: 2),
-              left: BorderSide(color: black, width: 2),
-            ),
-          ),
-          minX: 0,
-          maxX: projectedData.length.toDouble() - 1,
-          minY: 0,
-          maxY: maxY,
-          lineBarsData: [
-            // Original usage line
-            LineChartBarData(
-              spots: projectedData.asMap().entries.map((entry) {
-                return FlSpot(
-                  entry.key.toDouble(),
-                  entry.value['waterLevel'].toDouble(),
-                );
-              }).toList(),
-              isCurved: true,
-              gradient: LinearGradient(
-                colors: [blue, isIncreasing ? Colors.green : Colors.red],
+              rightTitles: AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
               ),
-              barWidth: 3,
-              isStrokeCapRound: true,
-              dotData: FlDotData(show: false),
-              belowBarData: BarAreaData(
-                show: true,
-                gradient: LinearGradient(
-                  colors: [
-                    blue.withValues(alpha: 0.3),
-                    (isIncreasing ? Colors.green : Colors.red).withValues(
-                      alpha: 0.1,
-                    ),
-                  ],
+              topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 30,
+                  interval: projectedData.length / 6,
+                  getTitlesWidget: (value, meta) {
+                    final index = value.toInt();
+                    if (index >= 0 && index < projectedData.length) {
+                      return Text(
+                        projectedData[index]['dateFormatted'],
+                        style: TextStyle(
+                          color: black,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    }
+                    return Text('');
+                  },
                 ),
               ),
             ),
-            // Comparison usage line
-            if (comparisonUsage > 0)
+            borderData: FlBorderData(
+              show: true,
+              border: Border(
+                bottom: BorderSide(color: black, width: 2),
+                left: BorderSide(color: black, width: 2),
+              ),
+            ),
+            minX: 0,
+            maxX: projectedData.length.toDouble() - 1,
+            minY: 0,
+            maxY: maxY,
+            lineBarsData: [
+              // Current usage line
               LineChartBarData(
-                spots: comparisonProjectedData.asMap().entries.map((entry) {
+                spots: projectedData.asMap().entries.map((entry) {
                   return FlSpot(
                     entry.key.toDouble(),
                     entry.value['waterLevel'].toDouble(),
@@ -326,44 +320,75 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                 }).toList(),
                 isCurved: true,
                 gradient: LinearGradient(
-                  colors: [Colors.orange, Colors.purple],
+                  colors: [blue, isIncreasing ? Colors.green : Colors.red],
                 ),
                 barWidth: 3,
                 isStrokeCapRound: true,
                 dotData: FlDotData(show: false),
-                dashArray: [5, 5], // Dashed line to differentiate
                 belowBarData: BarAreaData(
-                  show: false,
-                ), // No fill for comparison line
+                  show: true,
+                  gradient: LinearGradient(
+                    colors: [
+                      blue.withValues(alpha: 0.3),
+                      (isIncreasing ? Colors.green : Colors.red).withValues(
+                        alpha: 0.1,
+                      ),
+                    ],
+                  ),
+                ),
               ),
-          ],
-          lineTouchData: LineTouchData(
-            enabled: true,
-            touchTooltipData: LineTouchTooltipData(
-              getTooltipItems: (touchedSpots) {
-                return touchedSpots.map((spot) {
-                  final index = spot.x.toInt();
-                  final isCurrentUsage = spot.barIndex == 0;
+              // Comparison usage line
+              if (comparisonUsage > 0)
+                LineChartBarData(
+                  spots: comparisonProjectedData.asMap().entries.map((entry) {
+                    return FlSpot(
+                      entry.key.toDouble(),
+                      entry.value['waterLevel'].toDouble(),
+                    );
+                  }).toList(),
+                  preventCurveOverShooting: true,
 
-                  if (isCurrentUsage && index < projectedData.length) {
-                    final data = projectedData[index];
-                    final date = DateTime.parse(data['date']);
-                    return LineTooltipItem(
-                      'Current Usage\n${date.day}/${date.month}\n${data['waterLevel']}L',
-                      TextStyle(color: white, fontSize: 12),
-                    );
-                  } else if (!isCurrentUsage &&
-                      index < comparisonProjectedData.length) {
-                    final data = comparisonProjectedData[index];
-                    final date = DateTime.parse(data['date']);
-                    return LineTooltipItem(
-                      'Comparison Usage\n${date.day}/${date.month}\n${data['waterLevel']}L',
-                      TextStyle(color: white, fontSize: 12),
-                    );
-                  }
-                  return null;
-                }).toList();
-              },
+                  isCurved: true,
+                  gradient: LinearGradient(
+                    colors: [Colors.orange, Colors.purple],
+                  ),
+                  barWidth: 3,
+                  isStrokeCapRound: true,
+                  dotData: FlDotData(show: false),
+                  dashArray: [5, 5], // Dashed line to differentiate
+                  belowBarData: BarAreaData(
+                    show: false,
+                  ), // No fill for comparison line
+                ),
+            ],
+            lineTouchData: LineTouchData(
+              enabled: true,
+              touchTooltipData: LineTouchTooltipData(
+                getTooltipItems: (touchedSpots) {
+                  return touchedSpots.map((spot) {
+                    final index = spot.x.toInt();
+                    final isCurrentUsage = spot.barIndex == 0;
+
+                    if (isCurrentUsage && index < projectedData.length) {
+                      final data = projectedData[index];
+                      final date = DateTime.parse(data['date']);
+                      return LineTooltipItem(
+                        'Current Usage\n${date.day}/${date.month}\n${data['waterLevel']}L',
+                        TextStyle(color: white, fontSize: 12),
+                      );
+                    } else if (!isCurrentUsage &&
+                        index < comparisonProjectedData.length) {
+                      final data = comparisonProjectedData[index];
+                      final date = DateTime.parse(data['date']);
+                      return LineTooltipItem(
+                        'Comparison Usage\n${date.day}/${date.month}\n${data['waterLevel']}L',
+                        TextStyle(color: white, fontSize: 12),
+                      );
+                    }
+                    return null;
+                  }).toList();
+                },
+              ),
             ),
           ),
         ),
@@ -391,7 +416,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
     }
   }
 
-  // Update the chart container to include a legend
+  // Add legend to chart to differentiate between current and comparison usage
   Widget _buildChartWithLegend() {
     return ConstrainedWidthWidget(
       child: Container(
@@ -406,15 +431,11 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
             spacing: 16,
             children: [
               Text("Water Level Comparison", style: subHeadingStyle),
-              Text(
-                "Selected comparison usage compared to current usage",
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-
               // Legend
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // Current usage line
                   Container(
                     width: 20,
                     height: 3,
@@ -435,6 +456,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                     ),
                   ),
                   SizedBox(width: 16),
+                  // Comparison usage line
                   Container(
                     width: 20,
                     height: 3,
@@ -454,7 +476,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                   ),
                 ],
               ),
-
+              // Build the chart
               _buildProjectionChart(),
             ],
           ),
@@ -507,46 +529,8 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 80,
-        backgroundColor: Colors.transparent,
-        automaticallyImplyLeading: true,
-        leadingWidth: 144,
-        leading: IconButton(
-          icon: Padding(
-            padding: EdgeInsets.fromLTRB(24, 12, 32, 12),
-            child: Row(
-              spacing: 8,
-              children: [
-                Icon(Icons.arrow_back_ios_new),
-                Text(
-                  "Back",
-                  style: GoogleFonts.openSans(
-                    textStyle: const TextStyle(
-                      color: white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          color: white,
-          onPressed: () => Navigator.pop(context), // Back to prev view
-        ),
-        actions: [
-          Hero(
-            tag: "logo",
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(0, 12, 48, 12),
-              child: Image.asset(logo),
-            ),
-          ),
-        ],
-      ),
-      body: // Water optimisation tips
-      Center(
+      appBar: buildAppBar(context, null),
+      body: Center(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(32),
@@ -577,6 +561,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                       child: Column(
                         spacing: 16,
                         children: [
+                          // Current usage values
                           ConstrainedWidthWidget(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -587,6 +572,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
+                                    // Current usage in L/day
                                     RichText(
                                       text: TextSpan(
                                         children: [
@@ -614,11 +600,14 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                                         ],
                                       ),
                                     ),
+                                    // Current days remaining of inventory
                                     RichText(
                                       text: TextSpan(
                                         children: [
                                           TextSpan(
-                                            text: daysLeft.toString(),
+                                            text: daysLeft == -1
+                                                ? "Infinite"
+                                                : daysLeft.toString(),
                                             // textAlign: TextAlign.right,
                                             style: GoogleFonts.openSans(
                                               textStyle: const TextStyle(
@@ -647,6 +636,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                             ),
                           ),
 
+                          // Slider
                           ConstrainedWidthWidget(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -694,6 +684,8 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                               ],
                             ),
                           ),
+
+                          // Comparison usage
                           ConstrainedWidthWidget(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -707,6 +699,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
+                                    // Comparison usage in L/day
                                     RichText(
                                       text: TextSpan(
                                         children: [
@@ -734,11 +727,14 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                                         ],
                                       ),
                                     ),
+                                    // Comparison days remaining of inventory
                                     RichText(
                                       text: TextSpan(
                                         children: [
                                           TextSpan(
-                                            text: comparisonDaysLeft.toString(),
+                                            text: comparisonDaysLeft == -1
+                                                ? "Infinite"
+                                                : comparisonDaysLeft.toString(),
                                             style: GoogleFonts.openSans(
                                               textStyle: const TextStyle(
                                                 color: black,
@@ -763,6 +759,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                                 ),
                                 SizedBox(height: 8),
 
+                                // Percentage difference between current and comparison
                                 Text(
                                   comparisonResultMessage,
                                   style: GoogleFonts.openSans(
@@ -809,7 +806,6 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                                     "Select assumed rainfall pattern for projections",
                                 child: DropdownMenu<String>(
                                   width: double.infinity,
-                                  //mediaWidth * 0.8,
                                   initialSelection: selectedRainfall,
                                   dropdownMenuEntries: [
                                     DropdownMenuEntry(
@@ -864,8 +860,11 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                                     if (rainfall != null) {
                                       setState(() {
                                         selectedRainfall = rainfall;
+                                        // Update values for new scenario
+                                        _calculateResults().then((_) {
+                                          _calculateComparisonDaysRemaining();
+                                        });
                                       });
-                                      _calculateResults(); // Recalculate with new scenario
                                     }
                                   },
                                 ),
@@ -890,6 +889,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                   ),
                 ),
 
+                // Optimisation tips
                 Column(
                   children: [
                     ConstrainedWidthWidget(
@@ -971,7 +971,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                   ],
                 ),
 
-                // Optimisation tips button
+                // Back to water usage view button
                 ConstrainedWidthWidget(
                   child: Row(
                     spacing: 16,
@@ -992,7 +992,10 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                                 setState(() {
                                   usageIsPressed = false;
                                 });
+                                // Double pop to nav back to water usage view
+                                // ignore: use_build_context_synchronously
                                 Navigator.pop(context);
+                                // ignore: use_build_context_synchronously
                                 Navigator.pop(context);
                               });
                             },
@@ -1031,7 +1034,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
   }
 }
 
-// custom painter for the dashed line in legend
+// Custom painter for the dashed line in legend
 class DashedLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

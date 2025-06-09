@@ -1,16 +1,11 @@
-# aquabalance
+# AquaBalance
 
-A new Flutter project.
+A water tank management tool.
 
-## Getting Started
+Calculate how many days you have remaining of water inventory in your tanks based on current inventory, rainfall, and usage.
 
-This project is a starting point for a Flutter application.
+Visualise how differing water usage would affect how long your inventory lasts.
 
-A few resources to get you started if this is your first Flutter project:
+## Supported Platforms
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- [Web](https://aquabalance-tool.web.app/)
