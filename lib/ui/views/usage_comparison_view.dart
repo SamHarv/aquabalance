@@ -54,14 +54,15 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
   void initState() {
     super.initState();
     _calculateResults().then((_) {
+      // // Initialise comparison usage to daily usage minus 5%
+      // comparisonUsage = dailyUsage * 0.95;
+      // Get comparison vs current % difference
+      comparisonResultMessage = getComparisonDifference(
+        dailyUsage,
+        comparisonUsage,
+      );
       _calculateComparisonDaysRemaining();
     }); // Calculate results to initialise values
-
-    // Get comparison vs current % difference
-    comparisonResultMessage = getComparisonDifference(
-      dailyUsage,
-      comparisonUsage,
-    );
   }
 
   // Show alert dialog
@@ -130,7 +131,9 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
         daysLeft = results['daysRemaining'] ?? 0;
         currentInventory = results['currentInventory'] ?? 0;
         dailyUsage = results['dailyUsage'] ?? 0;
-        comparisonUsage = results['dailyUsage'] ?? 0;
+        comparisonUsage == 0
+            ? comparisonUsage = results['dailyUsage'] * 0.95 ?? 0
+            : comparisonUsage = comparisonUsage;
         dailyIntake = results['dailyIntake'] ?? 0;
         netDailyChange = results['netDailyChange'] ?? 0;
         isIncreasing = results['isIncreasing'] ?? false;
@@ -761,7 +764,10 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
 
                                 // Percentage difference between current and comparison
                                 Text(
-                                  comparisonResultMessage,
+                                  getComparisonDifference(
+                                    dailyUsage,
+                                    comparisonUsage,
+                                  ),
                                   style: GoogleFonts.openSans(
                                     textStyle: const TextStyle(
                                       color: black,
