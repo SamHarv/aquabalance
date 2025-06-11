@@ -40,6 +40,8 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
   double comparisonUsage = 0;
   dynamic comparisonDaysLeft = 0;
   String comparisonResultMessage = "";
+  bool usageIsIncreasing = false;
+  bool daysRemainingIsIncreasing = true;
 
   // User inputs
   String selectedRainfall = "10-year median";
@@ -102,11 +104,51 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
     if (percDiff > 0) {
       // Comparison usage is greater than current
       percDiff = percDiff.abs();
-      return "${percDiff.toInt()}% greater than current usage";
+      usageIsIncreasing = true;
+      return "${percDiff.toInt()}% increase";
     } else {
       // Comparison usage is less than or equal to current
       percDiff = percDiff.abs();
-      return "${percDiff.toInt()}% less than current usage";
+      usageIsIncreasing = false;
+      return "${percDiff.toInt()}% reduction";
+    }
+  }
+
+  // Get percentage difference in days remaining
+  String getDaysRemainingDifference(
+    dynamic currentDaysLeft,
+    dynamic comparisonDaysLeft,
+  ) {
+    double daysDiffPerc = 0;
+
+    if (comparisonDaysLeft == "Infinite" && currentDaysLeft == -1) {
+      daysRemainingIsIncreasing = true;
+      return "means days remaining remains infinite";
+    } else if (comparisonDaysLeft == "Infinite") {
+      daysRemainingIsIncreasing = true;
+      return "increases days remaining infinitely";
+    } else if (currentDaysLeft == "Infinite") {
+      daysRemainingIsIncreasing = false;
+      return "decreases days remaining infinitely";
+    }
+
+    if (comparisonDaysLeft == 0) {
+      daysDiffPerc = -100;
+    } else if (currentDaysLeft == 0) {
+      daysDiffPerc = 100;
+    } else {
+      daysDiffPerc =
+          ((comparisonDaysLeft - currentDaysLeft) / currentDaysLeft) * 100;
+    }
+
+    if (daysDiffPerc > 0) {
+      daysDiffPerc = daysDiffPerc.abs();
+      daysRemainingIsIncreasing = true;
+      return "increases days remaining by ${daysDiffPerc.toInt()}%";
+    } else {
+      daysDiffPerc = daysDiffPerc.abs();
+      daysRemainingIsIncreasing = false;
+      return "decreases days remaining by ${daysDiffPerc.toInt()}%";
     }
   }
 
@@ -569,12 +611,14 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Current Usage", style: subHeadingStyle),
-                                SizedBox(height: 8),
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
+                                    Text(
+                                      "Current Usage",
+                                      style: subHeadingStyle,
+                                    ),
                                     // Current usage in L/day
                                     RichText(
                                       text: TextSpan(
@@ -603,15 +647,25 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                                         ],
                                       ),
                                     ),
-                                    // Current days remaining of inventory
+                                  ],
+                                ),
+                                SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "Comparison Usage",
+                                      style: subHeadingStyle,
+                                    ),
+                                    // Comparison usage in L/day
                                     RichText(
                                       text: TextSpan(
                                         children: [
                                           TextSpan(
-                                            text: daysLeft == -1
-                                                ? "Infinite"
-                                                : daysLeft.toString(),
-                                            // textAlign: TextAlign.right,
+                                            text: formatter.format(
+                                              comparisonUsage,
+                                            ),
                                             style: GoogleFonts.openSans(
                                               textStyle: const TextStyle(
                                                 color: black,
@@ -621,8 +675,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                                             ),
                                           ),
                                           TextSpan(
-                                            text: " days remaining",
-                                            // textAlign: TextAlign.right,
+                                            text: " L/day",
                                             style: GoogleFonts.openSans(
                                               textStyle: const TextStyle(
                                                 color: black,
@@ -687,92 +740,181 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                               ],
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
 
-                          // Comparison usage
+                // Chart to visualise tank levels
+                _buildChartWithLegend(),
+
+                // Outputs
+                ConstrainedWidthWidget(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: white,
+                      borderRadius: kBorderRadius,
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                "Days of inventory remaining:",
+                                style: subHeadingStyle,
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "On current usage:",
+                                style: GoogleFonts.openSans(
+                                  textStyle: const TextStyle(
+                                    color: black,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              // Current days remaining of inventory
+                              RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: daysLeft == -1
+                                          ? "Infinite"
+                                          : daysLeft.toString(),
+                                      // textAlign: TextAlign.right,
+                                      style: GoogleFonts.openSans(
+                                        textStyle: const TextStyle(
+                                          color: black,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    // TextSpan(
+                                    //   text: " days remaining",
+                                    //   // textAlign: TextAlign.right,
+                                    //   style: GoogleFonts.openSans(
+                                    //     textStyle: const TextStyle(
+                                    //       color: black,
+                                    //       fontSize: 16,
+                                    //     ),
+                                    //   ),
+                                    // ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+
+                          // Comparison days remaining
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "On comparison usage:",
+                                style: GoogleFonts.openSans(
+                                  textStyle: const TextStyle(
+                                    color: black,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              // Comparison days remaining of inventory
+                              RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: comparisonDaysLeft == -1
+                                          ? "Infinite"
+                                          : comparisonDaysLeft.toString(),
+                                      style: GoogleFonts.openSans(
+                                        textStyle: TextStyle(
+                                          color: black,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    // TextSpan(
+                                    //   text: " days remaining",
+                                    //   style: GoogleFonts.openSans(
+                                    //     textStyle: const TextStyle(
+                                    //       color: black,
+                                    //       fontSize: 16,
+                                    //     ),
+                                    //   ),
+                                    // ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+
+                          // Percentage comparison
                           ConstrainedWidthWidget(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  "Comparison Usage",
-                                  style: subHeadingStyle,
-                                ),
-                                SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    // Comparison usage in L/day
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: formatter.format(
-                                              comparisonUsage,
-                                            ),
-                                            style: GoogleFonts.openSans(
-                                              textStyle: const TextStyle(
-                                                color: black,
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: " L/day",
-                                            style: GoogleFonts.openSans(
-                                              textStyle: const TextStyle(
-                                                color: black,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    // Comparison days remaining of inventory
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: comparisonDaysLeft == -1
-                                                ? "Infinite"
-                                                : comparisonDaysLeft.toString(),
-                                            style: GoogleFonts.openSans(
-                                              textStyle: const TextStyle(
-                                                color: black,
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: " days remaining",
-                                            style: GoogleFonts.openSans(
-                                              textStyle: const TextStyle(
-                                                color: black,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 8),
-
                                 // Percentage difference between current and comparison
-                                Text(
-                                  getComparisonDifference(
-                                    dailyUsage,
-                                    comparisonUsage,
-                                  ),
-                                  style: GoogleFonts.openSans(
-                                    textStyle: const TextStyle(
-                                      color: black,
-                                      fontSize: 16,
-                                    ),
+                                RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: "Comparison usage assumes a ",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: subHeadingStyle,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: getComparisonDifference(
+                                          dailyUsage,
+                                          comparisonUsage,
+                                        ),
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(
+                                            color: usageIsIncreasing
+                                                ? Colors.green
+                                                : Colors.red,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: " on current, this ",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: subHeadingStyle,
+                                        ),
+                                      ),
+
+                                      TextSpan(
+                                        text: getDaysRemainingDifference(
+                                          daysLeft,
+                                          comparisonDaysLeft,
+                                        ),
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(
+                                            color: daysRemainingIsIncreasing
+                                                ? Colors.green
+                                                : Colors.red,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -783,9 +925,6 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                     ),
                   ),
                 ),
-
-                // Chart to visualise tank levels
-                _buildChartWithLegend(),
 
                 // Rainfall pattern selection
                 ConstrainedWidthWidget(

@@ -468,6 +468,35 @@ class _OutputViewState extends State<OutputView> {
                 // Results cards
                 _buildResultsCards(),
 
+                // Chart to visualise tank levels
+                ConstrainedWidthWidget(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: white,
+                      border: Border.all(color: black, width: 3),
+                      borderRadius: kBorderRadius,
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        spacing: 16,
+                        children: [
+                          Text(
+                            "Water Level Projection",
+                            style: subHeadingStyle,
+                          ),
+                          Text(
+                            "Based on current usage and selected rainfall pattern",
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+
+                          _buildProjectionChart(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
                 ConstrainedWidthWidget(
                   child: Column(
                     children: [
@@ -570,35 +599,6 @@ class _OutputViewState extends State<OutputView> {
                         ),
                       ),
                     ],
-                  ),
-                ),
-
-                // Chart to visualise tank levels
-                ConstrainedWidthWidget(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: white,
-                      border: Border.all(color: black, width: 3),
-                      borderRadius: kBorderRadius,
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        spacing: 16,
-                        children: [
-                          Text(
-                            "Water Level Projection",
-                            style: subHeadingStyle,
-                          ),
-                          Text(
-                            "Based on current usage and selected rainfall pattern",
-                            style: TextStyle(fontSize: 12, color: Colors.grey),
-                          ),
-
-                          _buildProjectionChart(),
-                        ],
-                      ),
-                    ),
                   ),
                 ),
 
