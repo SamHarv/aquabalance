@@ -76,7 +76,9 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
           borderRadius: kBorderRadius,
           side: kBorderSide,
         ),
-        title: Text(message, style: subHeadingStyle),
+        title: ConstrainedWidthWidget(
+          child: Text(message, style: subHeadingStyle),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -122,14 +124,19 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
     double daysDiffPerc = 0;
 
     if (comparisonDaysLeft == "Infinite" && currentDaysLeft == -1) {
-      daysRemainingIsIncreasing = true;
-      return "means days remaining remains infinite";
+      if (usageIsIncreasing) {
+        daysRemainingIsIncreasing = false;
+        return "decreases days remaining";
+      } else {
+        daysRemainingIsIncreasing = true;
+        return "increases days remaining";
+      }
     } else if (comparisonDaysLeft == "Infinite") {
       daysRemainingIsIncreasing = true;
-      return "increases days remaining infinitely";
-    } else if (currentDaysLeft == "Infinite") {
+      return "increases days remaining";
+    } else if (currentDaysLeft == "Infinite" || currentDaysLeft == -1) {
       daysRemainingIsIncreasing = false;
-      return "decreases days remaining infinitely";
+      return "decreases days remaining";
     }
 
     if (comparisonDaysLeft == 0) {
@@ -235,7 +242,10 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
           monthlyIntakeData[monthName]! / daysInMonth;
 
       // Update water level with comparison usage
-      currentLevel += (dailyIntakeForThisMonth - comparisonUsage);
+      // Ensure it does not exceed total capacity
+      if (currentLevel <= tankSummary['totalCapacity']) {
+        currentLevel += (dailyIntakeForThisMonth - comparisonUsage);
+      }
 
       // Ensure level doesn't go below 0
       if (currentLevel < 0) currentLevel = 0;
@@ -274,13 +284,15 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
     final comparisonProjectedData = _calculateComparisonProjection();
 
     // Find max value for chart scaling from both datasets
-    final maxLevel = [
-      ...projectedData.map((d) => d['waterLevel'] as int),
-      ...comparisonProjectedData.map((d) => d['waterLevel'] as int),
-    ].reduce((a, b) => a > b ? a : b);
+    // final maxLevel = [
+    //   ...projectedData.map((d) => d['waterLevel'] as int),
+    //   ...comparisonProjectedData.map((d) => d['waterLevel'] as int),
+    // ].reduce((a, b) => a > b ? a : b);
 
     // Add 20% to max value for chart height
-    final maxY = maxLevel > 0 ? maxLevel * 1.2 : 1000.0;
+    // final maxY = maxLevel > 0 ? maxLevel * 1.2 : 1000.0;
+
+    final maxY = tankSummary['totalCapacity'] + 1000;
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -473,56 +485,128 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
         child: Padding(
           padding: EdgeInsets.all(16),
           child: Column(
-            spacing: 16,
             children: [
-              Text("Water Level Comparison", style: subHeadingStyle),
+              Text("Current vs Comparison Usage", style: subHeadingStyle),
+              SizedBox(height: 16),
+
+              // Build the chart
+              _buildProjectionChart(),
               // Legend
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Column(
                 children: [
-                  // Current usage line
-                  Container(
-                    width: 20,
-                    height: 3,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          blue,
-                          isIncreasing ? Colors.green : Colors.red,
-                        ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Current usage line
+                      Container(
+                        width: 20,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              blue,
+                              isIncreasing ? Colors.green : Colors.red,
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      "Current Usage (${formatter.format(dailyUsage)}L/day)",
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ),
-                  SizedBox(width: 16),
-                  // Comparison usage line
-                  Container(
-                    width: 20,
-                    height: 3,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.orange, Colors.purple],
+                      SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          "Current Usage",
+                          style: GoogleFonts.openSans(
+                            textStyle: TextStyle(fontSize: 12),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: CustomPaint(painter: DashedLinePainter()),
+                      SizedBox(width: 8),
+                      Text(
+                        "${formatter.format(dailyUsage)}L/day",
+                        style: GoogleFonts.openSans(
+                          textStyle: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      "Comparison Usage (${formatter.format(comparisonUsage)}L/day)",
-                      style: TextStyle(fontSize: 12),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Comparison usage line
+                      Container(
+                        width: 20,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.orange, Colors.purple],
+                          ),
+                        ),
+                        child: CustomPaint(painter: DashedLinePainter()),
+                      ),
+                      SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          "Comparison Usage",
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        "${formatter.format(comparisonUsage)}L/day",
+                        style: GoogleFonts.openSans(
+                          textStyle: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              // Build the chart
-              _buildProjectionChart(),
+              //
+              ConstrainedWidthWidget(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Icon(Icons.water_drop_outlined, color: black, size: 40),
+                    Expanded(
+                      child: Slider(
+                        value: comparisonUsage,
+                        activeColor: black,
+                        secondaryActiveColor: white,
+                        thumbColor: blue,
+                        min: 0,
+                        max: dailyUsage * 2,
+                        divisions: 200,
+                        label: "${formatter.format(comparisonUsage)}L/day",
+                        onChanged: (value) {
+                          setState(() {
+                            comparisonUsage = value;
+                            comparisonResultMessage = getComparisonDifference(
+                              dailyUsage,
+                              comparisonUsage,
+                            );
+                            _calculateComparisonDaysRemaining();
+                          });
+                        },
+                        onChangeEnd: (value) {
+                          setState(() {
+                            comparisonUsage = value;
+                            comparisonResultMessage = getComparisonDifference(
+                              dailyUsage,
+                              comparisonUsage,
+                            );
+                            _calculateComparisonDaysRemaining();
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -594,157 +678,157 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                   ),
                 ),
 
-                // Slider Container
-                ConstrainedWidthWidget(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: white,
-                      borderRadius: kBorderRadius,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        spacing: 16,
-                        children: [
-                          // Current usage values
-                          ConstrainedWidthWidget(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "Current Usage",
-                                      style: subHeadingStyle,
-                                    ),
-                                    // Current usage in L/day
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: formatter.format(dailyUsage),
-                                            // textAlign: TextAlign.right,
-                                            style: GoogleFonts.openSans(
-                                              textStyle: const TextStyle(
-                                                color: black,
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: " L/day",
-                                            // textAlign: TextAlign.right,
-                                            style: GoogleFonts.openSans(
-                                              textStyle: const TextStyle(
-                                                color: black,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "Comparison Usage",
-                                      style: subHeadingStyle,
-                                    ),
-                                    // Comparison usage in L/day
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: formatter.format(
-                                              comparisonUsage,
-                                            ),
-                                            style: GoogleFonts.openSans(
-                                              textStyle: const TextStyle(
-                                                color: black,
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: " L/day",
-                                            style: GoogleFonts.openSans(
-                                              textStyle: const TextStyle(
-                                                color: black,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
+                // // Slider Container
+                // ConstrainedWidthWidget(
+                //   child: Container(
+                //     decoration: BoxDecoration(
+                //       color: white,
+                //       borderRadius: kBorderRadius,
+                //     ),
+                //     child: Padding(
+                //       padding: const EdgeInsets.all(16),
+                //       child: Column(
+                //         spacing: 16,
+                //         children: [
+                //           // Current usage values
+                //           ConstrainedWidthWidget(
+                //             child: Column(
+                //               crossAxisAlignment: CrossAxisAlignment.start,
+                //               children: [
+                //                 Row(
+                //                   mainAxisAlignment:
+                //                       MainAxisAlignment.spaceBetween,
+                //                   children: [
+                //                     Text(
+                //                       "Current Usage",
+                //                       style: subHeadingStyle,
+                //                     ),
+                //                     // Current usage in L/day
+                //                     RichText(
+                //                       text: TextSpan(
+                //                         children: [
+                //                           TextSpan(
+                //                             text: formatter.format(dailyUsage),
+                //                             // textAlign: TextAlign.right,
+                //                             style: GoogleFonts.openSans(
+                //                               textStyle: const TextStyle(
+                //                                 color: black,
+                //                                 fontSize: 20,
+                //                                 fontWeight: FontWeight.bold,
+                //                               ),
+                //                             ),
+                //                           ),
+                //                           TextSpan(
+                //                             text: " L/day",
+                //                             // textAlign: TextAlign.right,
+                //                             style: GoogleFonts.openSans(
+                //                               textStyle: const TextStyle(
+                //                                 color: black,
+                //                                 fontSize: 16,
+                //                               ),
+                //                             ),
+                //                           ),
+                //                         ],
+                //                       ),
+                //                     ),
+                //                   ],
+                //                 ),
+                //                 SizedBox(height: 8),
+                //                 Row(
+                //                   mainAxisAlignment:
+                //                       MainAxisAlignment.spaceBetween,
+                //                   children: [
+                //                     Text(
+                //                       "Comparison Usage",
+                //                       style: subHeadingStyle,
+                //                     ),
+                //                     // Comparison usage in L/day
+                //                     RichText(
+                //                       text: TextSpan(
+                //                         children: [
+                //                           TextSpan(
+                //                             text: formatter.format(
+                //                               comparisonUsage,
+                //                             ),
+                //                             style: GoogleFonts.openSans(
+                //                               textStyle: const TextStyle(
+                //                                 color: black,
+                //                                 fontSize: 20,
+                //                                 fontWeight: FontWeight.bold,
+                //                               ),
+                //                             ),
+                //                           ),
+                //                           TextSpan(
+                //                             text: " L/day",
+                //                             style: GoogleFonts.openSans(
+                //                               textStyle: const TextStyle(
+                //                                 color: black,
+                //                                 fontSize: 16,
+                //                               ),
+                //                             ),
+                //                           ),
+                //                         ],
+                //                       ),
+                //                     ),
+                //                   ],
+                //                 ),
+                //               ],
+                //             ),
+                //           ),
 
-                          // Slider
-                          ConstrainedWidthWidget(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Icon(
-                                  Icons.water_drop_outlined,
-                                  color: black,
-                                  size: 40,
-                                ),
-                                Expanded(
-                                  child: Slider(
-                                    value: comparisonUsage,
-                                    activeColor: black,
-                                    secondaryActiveColor: white,
-                                    thumbColor: blue,
-                                    min: 0,
-                                    max: dailyUsage * 2,
-                                    divisions: 200,
-                                    label:
-                                        "${formatter.format(comparisonUsage)}L/day",
-                                    onChanged: (value) {
-                                      setState(() {
-                                        comparisonUsage = value;
-                                        comparisonResultMessage =
-                                            getComparisonDifference(
-                                              dailyUsage,
-                                              comparisonUsage,
-                                            );
-                                        _calculateComparisonDaysRemaining();
-                                      });
-                                    },
-                                    onChangeEnd: (value) {
-                                      setState(() {
-                                        comparisonUsage = value;
-                                        comparisonResultMessage =
-                                            getComparisonDifference(
-                                              dailyUsage,
-                                              comparisonUsage,
-                                            );
-                                        _calculateComparisonDaysRemaining();
-                                      });
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                //           // Slider
+                //           ConstrainedWidthWidget(
+                //             child: Row(
+                //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //               children: [
+                //                 Icon(
+                //                   Icons.water_drop_outlined,
+                //                   color: black,
+                //                   size: 40,
+                //                 ),
+                //                 Expanded(
+                //                   child: Slider(
+                //                     value: comparisonUsage,
+                //                     activeColor: black,
+                //                     secondaryActiveColor: white,
+                //                     thumbColor: blue,
+                //                     min: 0,
+                //                     max: dailyUsage * 2,
+                //                     divisions: 200,
+                //                     label:
+                //                         "${formatter.format(comparisonUsage)}L/day",
+                //                     onChanged: (value) {
+                //                       setState(() {
+                //                         comparisonUsage = value;
+                //                         comparisonResultMessage =
+                //                             getComparisonDifference(
+                //                               dailyUsage,
+                //                               comparisonUsage,
+                //                             );
+                //                         _calculateComparisonDaysRemaining();
+                //                       });
+                //                     },
+                //                     onChangeEnd: (value) {
+                //                       setState(() {
+                //                         comparisonUsage = value;
+                //                         comparisonResultMessage =
+                //                             getComparisonDifference(
+                //                               dailyUsage,
+                //                               comparisonUsage,
+                //                             );
+                //                         _calculateComparisonDaysRemaining();
+                //                       });
+                //                     },
+                //                   ),
+                //                 ),
+                //               ],
+                //             ),
+                //           ),
+                //         ],
+                //       ),
+                //     ),
+                //   ),
+                // ),
 
                 // Chart to visualise tank levels
                 _buildChartWithLegend(),

@@ -56,7 +56,9 @@ class _OutputViewState extends State<OutputView> {
           borderRadius: kBorderRadius,
           side: kBorderSide,
         ),
-        title: Text(message, style: subHeadingStyle),
+        title: ConstrainedWidthWidget(
+          child: Text(message, style: subHeadingStyle),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -119,10 +121,12 @@ class _OutputViewState extends State<OutputView> {
     }
 
     // Find max value for chart scaling
-    final maxLevel = projectedData
-        .map((d) => d['waterLevel'] as int)
-        .reduce((a, b) => a > b ? a : b);
-    final maxY = maxLevel > 0 ? maxLevel * 1.2 : 1000.0;
+    // final maxLevel = projectedData
+    //     .map((d) => d['waterLevel'] as int)
+    //     .reduce((a, b) => a > b ? a : b);
+    // final maxY = maxLevel > 0 ? maxLevel * 1.2 : 1000.0;
+
+    final maxY = tankSummary['totalCapacity'];
 
     return Padding(
       padding: const EdgeInsets.all(8.0),

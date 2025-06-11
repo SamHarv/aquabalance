@@ -187,7 +187,9 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
           borderRadius: kBorderRadius,
           side: kBorderSide,
         ),
-        title: Text(message, style: subHeadingStyle),
+        title: ConstrainedWidthWidget(
+          child: Text(message, style: subHeadingStyle),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),

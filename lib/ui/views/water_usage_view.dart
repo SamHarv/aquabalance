@@ -262,7 +262,9 @@ class _WaterUsageViewState extends State<WaterUsageView> {
           borderRadius: kBorderRadius,
           side: kBorderSide,
         ),
-        title: Text(message, style: subHeadingStyle),
+        title: ConstrainedWidthWidget(
+          child: Text(message, style: subHeadingStyle),
+        ),
         actions: [
           TextButton(
             onPressed: () {
@@ -368,9 +370,23 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                 // Generate individual usage selectors for each person
                 if (numOfPeople > 0) ...[
                   ConstrainedWidthWidget(
-                    child: Text(
-                      "Select water usage level for each person:",
-                      style: inputFieldStyle,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            "Select water usage level for each person:",
+                            style: inputFieldStyle,
+                          ),
+                        ),
+                        IconButton(
+                          // TODO: fix this message
+                          onPressed: () => _showAlertDialog(
+                            "How do I know if I am average?",
+                          ),
+                          icon: Icon(Icons.info, color: white),
+                        ),
+                      ],
                     ),
                   ),
 
@@ -436,7 +452,7 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                                   // Manual input field
                                   TextFormField(
                                     controller: manualInputControllers[i],
-                                    keyboardType: TextInputType.number,
+                                    // keyboardType: TextInputType.number,
                                     inputFormatters: [
                                       FilteringTextInputFormatter.digitsOnly,
                                       LengthLimitingTextInputFormatter(

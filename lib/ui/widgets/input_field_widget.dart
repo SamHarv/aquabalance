@@ -27,7 +27,7 @@ class _InputFieldWidgetState extends State<InputFieldWidget> {
   Widget build(BuildContext context) {
     return TextField(
       style: inputFieldStyle,
-      keyboardType: TextInputType.number, // Numeric inputs
+      // keyboardType: TextInputType., // Numeric inputs
       controller: widget.controller,
       onChanged: widget.onChanged, // on changed function can be called
       decoration: InputDecoration(

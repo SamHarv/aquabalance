@@ -17,6 +17,7 @@ class ResultsCalculator {
     try {
       // Get current inventory from tanks
       final currentInventory = await _getCurrentInventory();
+      final totalCapacity = await getTotalTankCapacity();
 
       // Get water usage per day
       final dailyUsage = await _getDailyWaterUsage();
@@ -27,6 +28,7 @@ class ResultsCalculator {
       // Calculate net position and days remaining
       final results = calculateWaterBalance(
         currentInventory: currentInventory,
+        totalCapacity: totalCapacity,
         dailyUsage: dailyUsage,
         monthlyIntake: monthlyIntake,
         comparisonUsage: comparisonUsage,
@@ -167,6 +169,7 @@ class ResultsCalculator {
       return monthlyStats;
     } catch (e) {
       // Return empty stats if error occurs
+
       return {
         'Jan': {'min': 0.0, 'median': 0.0, 'max': 0.0},
         'Feb': {'min': 0.0, 'median': 0.0, 'max': 0.0},
@@ -339,6 +342,7 @@ class ResultsCalculator {
   // Calculate water balance and determine days remaining
   static Map<String, dynamic> calculateWaterBalance({
     required int currentInventory,
+    required int totalCapacity,
     required double dailyUsage,
     required Map<String, double> monthlyIntake,
     double comparisonUsage = 0.0,
@@ -397,6 +401,7 @@ class ResultsCalculator {
     // Calculate projected inventory levels for chart
     final projectedData = calculateProjectedLevels(
       currentInventory: currentInventory,
+      totalCapacity: totalCapacity,
       dailyUsage: dailyUsage,
       monthlyIntake: monthlyIntake,
       daysToProject: 90, // Project 3 months ahead
@@ -405,6 +410,7 @@ class ResultsCalculator {
     // Calculate projected inventory levels for chart
     final comparisonData = calculateProjectedLevels(
       currentInventory: currentInventory,
+      totalCapacity: totalCapacity,
       dailyUsage: comparisonUsage,
       monthlyIntake: monthlyIntake,
       daysToProject: 90, // Project 3 months ahead
@@ -427,6 +433,7 @@ class ResultsCalculator {
   // Calculate projected water levels for charting
   static List<Map<String, dynamic>> calculateProjectedLevels({
     required int currentInventory,
+    required int totalCapacity,
     required double dailyUsage,
     required Map<String, double> monthlyIntake,
     required int daysToProject,
@@ -448,6 +455,7 @@ class ResultsCalculator {
     ];
 
     double currentLevel = currentInventory.toDouble();
+    double totalLevel = totalCapacity.toDouble();
     final startDate = DateTime.now();
 
     for (int day = 0; day <= daysToProject; day++) {
@@ -464,7 +472,9 @@ class ResultsCalculator {
       final dailyIntake = monthlyIntake[monthName]! / daysInMonth;
 
       // Update water level
-      currentLevel += (dailyIntake - dailyUsage);
+      if (currentLevel <= totalLevel) {
+        currentLevel += (dailyIntake - dailyUsage);
+      }
 
       // Ensure level doesn't go below 0
       if (currentLevel < 0) currentLevel = 0;

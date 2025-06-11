@@ -18,3 +18,19 @@ Visualise how differing water usage would affect how long your inventory lasts.
 - The data folder contains the logic used to access the API, and model classes for custom objects used throughout the application
 - The logic folder contains files on services around data persistence as well as files with the calculations used throughout the application to process inputs
 - The UI (user interface) folder contains files for each screen displayed in the app and for custom widgets reused throughout the code
+
+## Dependencies
+
+AquaBalance was build using Flutter 3.32.0 (stable) and Dart 3.8.0 (stable) with a Firebase backend through VS Code
+
+External packages:
+- google_fonts: ^6.2.1
+- flutter_native_splash: ^2.4.6
+- flutter_launcher_icons: ^0.14.3
+- firebase_core: ^3.13.1
+- shared_preferences: ^2.5.3
+- http: ^1.4.0
+- fl_chart: ^1.0.0
+- intl: ^0.20.2
+- firebase_ai: ^2.0.0
+- url_launcher: ^6.3.1

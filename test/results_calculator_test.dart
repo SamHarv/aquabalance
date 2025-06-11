@@ -304,6 +304,7 @@ void main() {
         // Act
         final result = ResultsCalculator.calculateWaterBalance(
           currentInventory: 10000,
+          totalCapacity: 10000,
           dailyUsage: 100.0, // Low usage
           monthlyIntake: monthlyIntake,
         );
@@ -334,6 +335,7 @@ void main() {
         // Act
         final result = ResultsCalculator.calculateWaterBalance(
           currentInventory: 5000,
+          totalCapacity: 10000,
           dailyUsage: 200.0, // High usage
           monthlyIntake: monthlyIntake,
         );
@@ -364,6 +366,7 @@ void main() {
         // Act
         final result = ResultsCalculator.calculateWaterBalance(
           currentInventory: 0,
+          totalCapacity: 10000,
           dailyUsage: 200.0,
           monthlyIntake: monthlyIntake,
         );
@@ -393,6 +396,7 @@ void main() {
         // Act
         final result = ResultsCalculator.calculateWaterBalance(
           currentInventory: 5000,
+          totalCapacity: 10000,
           dailyUsage: 150.0,
           monthlyIntake: monthlyIntake,
         );
@@ -424,6 +428,7 @@ void main() {
         // Act
         final result = ResultsCalculator.calculateProjectedLevels(
           currentInventory: 5000,
+          totalCapacity: 10000,
           dailyUsage: 100.0,
           monthlyIntake: monthlyIntake,
           daysToProject: 30,
@@ -465,6 +470,7 @@ void main() {
         // Act
         final result = ResultsCalculator.calculateProjectedLevels(
           currentInventory: 1000,
+          totalCapacity: 10000,
           dailyUsage: 100.0, // Using more than gaining
           monthlyIntake: monthlyIntake,
           daysToProject: 30,
@@ -495,6 +501,7 @@ void main() {
         // Act
         final result = ResultsCalculator.calculateProjectedLevels(
           currentInventory: 500,
+          totalCapacity: 1000,
           dailyUsage: 200.0,
           monthlyIntake: monthlyIntake,
           daysToProject: 10,
