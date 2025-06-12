@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '/logic/services/data_persist_service.dart';
 import '/ui/widgets/constrained_width_widget.dart';
@@ -236,14 +237,24 @@ class _WaterUsageViewState extends State<WaterUsageView> {
 
       final usage = int.parse(value);
       if (usage < 0 || usage > 1500) {
-        _showAlertDialog("Please enter a value between 0 and 1500 litres");
+        _showAlertDialog(
+          Text(
+            "Please enter a value between 0 and 1500 litres",
+            style: subHeadingStyle,
+          ),
+        );
         return;
       }
 
       _updatePersonUsage(personIndex, usage);
     } catch (e) {
       if (value.isNotEmpty) {
-        _showAlertDialog("Please enter a valid number between 0 and 1500");
+        _showAlertDialog(
+          Text(
+            "Please enter a valid number between 0 and 1500",
+            style: subHeadingStyle,
+          ),
+        );
       }
     }
   }
@@ -254,17 +265,16 @@ class _WaterUsageViewState extends State<WaterUsageView> {
   }
 
   // Show alert dialog with message
-  void _showAlertDialog(String message) {
+  void _showAlertDialog(Widget child) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        scrollable: true,
         shape: RoundedRectangleBorder(
           borderRadius: kBorderRadius,
           side: kBorderSide,
         ),
-        title: ConstrainedWidthWidget(
-          child: Text(message, style: subHeadingStyle),
-        ),
+        title: ConstrainedWidthWidget(child: child),
         actions: [
           TextButton(
             onPressed: () {
@@ -349,7 +359,10 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                           if (n < 1 || n > 20) {
                             if (number.isNotEmpty) {
                               _showAlertDialog(
-                                "Please enter a number of people between 1 and 20",
+                                Text(
+                                  "Please enter a number of people between 1 and 20",
+                                  style: subHeadingStyle,
+                                ),
                               );
                             }
                             return;
@@ -359,7 +372,10 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                       } catch (e) {
                         if (number.isNotEmpty) {
                           _showAlertDialog(
-                            "Please enter a valid number of people between 1 and 20",
+                            Text(
+                              "Please enter a valid number of people between 1 and 20",
+                              style: subHeadingStyle,
+                            ),
                           );
                         }
                       }
@@ -380,9 +396,64 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                           ),
                         ),
                         IconButton(
-                          // TODO: fix this message
+                          tooltip: "Guide for per person water usage level",
+
                           onPressed: () => _showAlertDialog(
-                            "How do I know if I am average?",
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Guide for per person water usage\n",
+                                  style: inputFieldStyle,
+                                ),
+                                Row(
+                                  children: [
+                                    Text("Low:", style: subHeadingStyle),
+                                  ],
+                                ),
+                                Text(
+                                  "• Households with efficient appliances.\n"
+                                  "• Infrequent and/or short showers.\n"
+                                  "• Minimal outdoor water use or highly efficient irrigation "
+                                  "systems.\n"
+                                  " Strong water conservation behaviors and awareness.\n",
+                                  style: GoogleFonts.openSans(
+                                    textStyle: TextStyle(fontSize: 14),
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Text("Avg:", style: subHeadingStyle),
+                                  ],
+                                ),
+                                Text(
+                                  "• Mix of efficient and standard appliances.\n"
+                                  "• Moderate outdoor water use for garden maintenance.\n"
+                                  "• Daily showers of 4 to 8 minutes.\n"
+                                  "• Some water conservation awareness but not consistently "
+                                  "applied.\n",
+
+                                  style: GoogleFonts.openSans(
+                                    textStyle: TextStyle(fontSize: 14),
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Text("High:", style: subHeadingStyle),
+                                  ],
+                                ),
+                                Text(
+                                  "• Large outdoor water use for gardens, pools, or extensive "
+                                  "irrigation.\n"
+                                  "• Older and less efficient appliances.\n"
+                                  "• Frequent and/or long showers.\n"
+                                  "• Regular baths.",
+                                  style: GoogleFonts.openSans(
+                                    textStyle: TextStyle(fontSize: 14),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           icon: Icon(Icons.info, color: white),
                         ),
@@ -587,12 +658,15 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                                 ),
                                 tooltip: "Disclaimer",
                                 onPressed: () => _showAlertDialog(
-                                  "This tool uses calculations to estimate water "
-                                  "intake and usage, and may not reflect actual "
-                                  "measures. Results should not be relied "
-                                  "upon for critical decisions without "
-                                  "professional advice. Data entered into this app "
-                                  "will be stored on your device and kept private.",
+                                  Text(
+                                    "This tool uses calculations to estimate water "
+                                    "intake and usage, and may not reflect actual "
+                                    "measures. Results should not be relied "
+                                    "upon for critical decisions without "
+                                    "professional advice. Data entered into this app "
+                                    "will be stored on your device and kept private.",
+                                    style: subHeadingStyle,
+                                  ),
                                 ),
                               ),
                             ],

@@ -21,7 +21,7 @@ Visualise how differing water usage would affect how long your inventory lasts.
 
 ## Dependencies
 
-AquaBalance was build using Flutter 3.32.0 (stable) and Dart 3.8.0 (stable) with a Firebase backend through VS Code
+AquaBalance was build using Flutter 3.32.0 (stable) and Dart 3.8.0 (stable) with a Firebase backend through VS Code.
 
 External packages:
 - google_fonts: ^6.2.1
