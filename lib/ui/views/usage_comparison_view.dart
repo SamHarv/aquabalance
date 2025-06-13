@@ -56,9 +56,6 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
   void initState() {
     super.initState();
     _calculateResults().then((_) {
-      // // Initialise comparison usage to daily usage minus 5%
-      // comparisonUsage = dailyUsage * 0.95;
-      // Get comparison vs current % difference
       comparisonResultMessage = getComparisonDifference(
         dailyUsage,
         comparisonUsage,
@@ -123,6 +120,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
   ) {
     double daysDiffPerc = 0;
 
+    // Don't add percentage values for infinite results
     if (comparisonDaysLeft == "Infinite" && currentDaysLeft == -1) {
       if (usageIsIncreasing) {
         daysRemainingIsIncreasing = false;
@@ -139,6 +137,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
       return "decreases days remaining";
     }
 
+    // Calculate percentage difference
     if (comparisonDaysLeft == 0) {
       daysDiffPerc = -100;
     } else if (currentDaysLeft == 0) {
@@ -148,6 +147,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
           ((comparisonDaysLeft - currentDaysLeft) / currentDaysLeft) * 100;
     }
 
+    // Return message
     if (daysDiffPerc > 0) {
       daysDiffPerc = daysDiffPerc.abs();
       daysRemainingIsIncreasing = true;
@@ -250,6 +250,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
       // Ensure level doesn't go below 0
       if (currentLevel < 0) currentLevel = 0;
 
+      // Add to comparison projected data
       comparisonProjectedData.add({
         'day': day,
         'date': projectedDate.toIso8601String().split('T')[0],
@@ -283,15 +284,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
     // Calculate comparison projection
     final comparisonProjectedData = _calculateComparisonProjection();
 
-    // Find max value for chart scaling from both datasets
-    // final maxLevel = [
-    //   ...projectedData.map((d) => d['waterLevel'] as int),
-    //   ...comparisonProjectedData.map((d) => d['waterLevel'] as int),
-    // ].reduce((a, b) => a > b ? a : b);
-
-    // Add 20% to max value for chart height
-    // final maxY = maxLevel > 0 ? maxLevel * 1.2 : 1000.0;
-
+    // Max value for chart scaling - total tank capacity
     final maxY = tankSummary['totalCapacity'] + 1000;
 
     return Padding(
@@ -311,6 +304,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
               },
             ),
             titlesData: FlTitlesData(
+              // Left Y axis labels (tank inventory)
               leftTitles: AxisTitles(
                 sideTitles: SideTitles(
                   maxIncluded:
@@ -318,6 +312,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                   showTitles: true,
                   reservedSize: 50, // Space for labels
                   getTitlesWidget: (value, meta) {
+                    // Return label as value in thousands
                     return Text(
                       '${(value / 1000).toStringAsFixed(0)}k',
                       style: TextStyle(
@@ -329,16 +324,20 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                   },
                 ),
               ),
+              // No right Y axis labels
               rightTitles: AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
               ),
+              // No top x axis labels
               topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              // Bottom x axis labels (date)
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 30,
                   interval: projectedData.length / 6,
                   getTitlesWidget: (value, meta) {
+                    // Return label as date
                     final index = value.toInt();
                     if (index >= 0 && index < projectedData.length) {
                       return Text(
@@ -362,10 +361,12 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                 left: BorderSide(color: black, width: 2),
               ),
             ),
+            // Chart constraints
             minX: 0,
             maxX: projectedData.length.toDouble() - 1,
             minY: 0,
             maxY: maxY,
+            // Data
             lineBarsData: [
               // Current usage line
               LineChartBarData(
@@ -418,6 +419,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                   ), // No fill for comparison line
                 ),
             ],
+            // To show when chart is touched
             lineTouchData: LineTouchData(
               enabled: true,
               touchTooltipData: LineTouchTooltipData(
@@ -455,25 +457,29 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
 
   // Calculate comparison days remaining
   void _calculateComparisonDaysRemaining() {
+    // If comparison usage is zero, then there is no comparison
     if (comparisonUsage <= 0) {
       comparisonDaysLeft = "Infinite";
       return;
     }
 
+    // Calculate net daily change
     final netDailyChange = dailyIntake - comparisonUsage;
 
     if (netDailyChange >= 0) {
       comparisonDaysLeft = "Infinite"; // Infinite/increasing
     } else {
+      // Min of zero
       if (currentInventory <= 0) {
         comparisonDaysLeft = 0;
       } else {
+        // Calculate days remaining
         comparisonDaysLeft = (currentInventory / netDailyChange.abs()).floor();
       }
     }
   }
 
-  // Add legend to chart to differentiate between current and comparison usage
+  // Build chart with legend to differentiate between current and comparison usage
   Widget _buildChartWithLegend() {
     return ConstrainedWidthWidget(
       child: Container(
@@ -486,11 +492,13 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
           padding: EdgeInsets.all(16),
           child: Column(
             children: [
+              // Title
               Text("Current vs Comparison Usage", style: subHeadingStyle),
               SizedBox(height: 16),
 
               // Build the chart
               _buildProjectionChart(),
+
               // Legend
               Column(
                 children: [
@@ -566,7 +574,8 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                   ),
                 ],
               ),
-              //
+
+              // Slider for comparison usage
               ConstrainedWidthWidget(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -579,11 +588,12 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                         secondaryActiveColor: white,
                         thumbColor: blue,
                         min: 0,
-                        max: dailyUsage * 2,
-                        divisions: 200,
+                        max: dailyUsage * 2, // Double the current usage
+                        divisions: 200, // Increments
                         label: "${formatter.format(comparisonUsage)}L/day",
                         onChanged: (value) {
                           setState(() {
+                            // Recalculate comparison values dynamically
                             comparisonUsage = value;
                             comparisonResultMessage = getComparisonDifference(
                               dailyUsage,
@@ -594,6 +604,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                         },
                         onChangeEnd: (value) {
                           setState(() {
+                            // Recalculate comparison values
                             comparisonUsage = value;
                             comparisonResultMessage = getComparisonDifference(
                               dailyUsage,
@@ -678,158 +689,6 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                   ),
                 ),
 
-                // // Slider Container
-                // ConstrainedWidthWidget(
-                //   child: Container(
-                //     decoration: BoxDecoration(
-                //       color: white,
-                //       borderRadius: kBorderRadius,
-                //     ),
-                //     child: Padding(
-                //       padding: const EdgeInsets.all(16),
-                //       child: Column(
-                //         spacing: 16,
-                //         children: [
-                //           // Current usage values
-                //           ConstrainedWidthWidget(
-                //             child: Column(
-                //               crossAxisAlignment: CrossAxisAlignment.start,
-                //               children: [
-                //                 Row(
-                //                   mainAxisAlignment:
-                //                       MainAxisAlignment.spaceBetween,
-                //                   children: [
-                //                     Text(
-                //                       "Current Usage",
-                //                       style: subHeadingStyle,
-                //                     ),
-                //                     // Current usage in L/day
-                //                     RichText(
-                //                       text: TextSpan(
-                //                         children: [
-                //                           TextSpan(
-                //                             text: formatter.format(dailyUsage),
-                //                             // textAlign: TextAlign.right,
-                //                             style: GoogleFonts.openSans(
-                //                               textStyle: const TextStyle(
-                //                                 color: black,
-                //                                 fontSize: 20,
-                //                                 fontWeight: FontWeight.bold,
-                //                               ),
-                //                             ),
-                //                           ),
-                //                           TextSpan(
-                //                             text: " L/day",
-                //                             // textAlign: TextAlign.right,
-                //                             style: GoogleFonts.openSans(
-                //                               textStyle: const TextStyle(
-                //                                 color: black,
-                //                                 fontSize: 16,
-                //                               ),
-                //                             ),
-                //                           ),
-                //                         ],
-                //                       ),
-                //                     ),
-                //                   ],
-                //                 ),
-                //                 SizedBox(height: 8),
-                //                 Row(
-                //                   mainAxisAlignment:
-                //                       MainAxisAlignment.spaceBetween,
-                //                   children: [
-                //                     Text(
-                //                       "Comparison Usage",
-                //                       style: subHeadingStyle,
-                //                     ),
-                //                     // Comparison usage in L/day
-                //                     RichText(
-                //                       text: TextSpan(
-                //                         children: [
-                //                           TextSpan(
-                //                             text: formatter.format(
-                //                               comparisonUsage,
-                //                             ),
-                //                             style: GoogleFonts.openSans(
-                //                               textStyle: const TextStyle(
-                //                                 color: black,
-                //                                 fontSize: 20,
-                //                                 fontWeight: FontWeight.bold,
-                //                               ),
-                //                             ),
-                //                           ),
-                //                           TextSpan(
-                //                             text: " L/day",
-                //                             style: GoogleFonts.openSans(
-                //                               textStyle: const TextStyle(
-                //                                 color: black,
-                //                                 fontSize: 16,
-                //                               ),
-                //                             ),
-                //                           ),
-                //                         ],
-                //                       ),
-                //                     ),
-                //                   ],
-                //                 ),
-                //               ],
-                //             ),
-                //           ),
-
-                //           // Slider
-                //           ConstrainedWidthWidget(
-                //             child: Row(
-                //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //               children: [
-                //                 Icon(
-                //                   Icons.water_drop_outlined,
-                //                   color: black,
-                //                   size: 40,
-                //                 ),
-                //                 Expanded(
-                //                   child: Slider(
-                //                     value: comparisonUsage,
-                //                     activeColor: black,
-                //                     secondaryActiveColor: white,
-                //                     thumbColor: blue,
-                //                     min: 0,
-                //                     max: dailyUsage * 2,
-                //                     divisions: 200,
-                //                     label:
-                //                         "${formatter.format(comparisonUsage)}L/day",
-                //                     onChanged: (value) {
-                //                       setState(() {
-                //                         comparisonUsage = value;
-                //                         comparisonResultMessage =
-                //                             getComparisonDifference(
-                //                               dailyUsage,
-                //                               comparisonUsage,
-                //                             );
-                //                         _calculateComparisonDaysRemaining();
-                //                       });
-                //                     },
-                //                     onChangeEnd: (value) {
-                //                       setState(() {
-                //                         comparisonUsage = value;
-                //                         comparisonResultMessage =
-                //                             getComparisonDifference(
-                //                               dailyUsage,
-                //                               comparisonUsage,
-                //                             );
-                //                         _calculateComparisonDaysRemaining();
-                //                       });
-                //                     },
-                //                   ),
-                //                 ),
-                //               ],
-                //             ),
-                //           ),
-                //         ],
-                //       ),
-                //     ),
-                //   ),
-                // ),
-
                 // Chart to visualise tank levels
                 _buildChartWithLegend(),
 
@@ -873,8 +732,7 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                                     TextSpan(
                                       text: daysLeft == -1
                                           ? "Infinite"
-                                          : daysLeft.toString(),
-                                      // textAlign: TextAlign.right,
+                                          : formatter.format(daysLeft),
                                       style: GoogleFonts.openSans(
                                         textStyle: const TextStyle(
                                           color: black,
@@ -883,16 +741,6 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                                         ),
                                       ),
                                     ),
-                                    // TextSpan(
-                                    //   text: " days remaining",
-                                    //   // textAlign: TextAlign.right,
-                                    //   style: GoogleFonts.openSans(
-                                    //     textStyle: const TextStyle(
-                                    //       color: black,
-                                    //       fontSize: 16,
-                                    //     ),
-                                    //   ),
-                                    // ),
                                   ],
                                 ),
                               ),
@@ -919,9 +767,11 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                      text: comparisonDaysLeft == -1
+                                      text: comparisonDaysLeft == "Infinite"
                                           ? "Infinite"
-                                          : comparisonDaysLeft.toString(),
+                                          : formatter.format(
+                                              comparisonDaysLeft,
+                                            ),
                                       style: GoogleFonts.openSans(
                                         textStyle: TextStyle(
                                           color: black,
@@ -930,15 +780,6 @@ class _UsageComparisonViewState extends State<UsageComparisonView> {
                                         ),
                                       ),
                                     ),
-                                    // TextSpan(
-                                    //   text: " days remaining",
-                                    //   style: GoogleFonts.openSans(
-                                    //     textStyle: const TextStyle(
-                                    //       color: black,
-                                    //       fontSize: 16,
-                                    //     ),
-                                    //   ),
-                                    // ),
                                   ],
                                 ),
                               ),

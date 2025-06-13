@@ -120,12 +120,7 @@ class _OutputViewState extends State<OutputView> {
       );
     }
 
-    // Find max value for chart scaling
-    // final maxLevel = projectedData
-    //     .map((d) => d['waterLevel'] as int)
-    //     .reduce((a, b) => a > b ? a : b);
-    // final maxY = maxLevel > 0 ? maxLevel * 1.2 : 1000.0;
-
+    // Max value for chart scaling == total tank capacity
     final maxY = tankSummary['totalCapacity'];
 
     return Padding(

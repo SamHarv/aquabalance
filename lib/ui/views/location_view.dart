@@ -94,7 +94,6 @@ class _LocationViewState extends State<LocationView> {
       setState(() {
         monthlyRainfallData = rainfallData['monthlyData'];
       });
-      print("Success!");
     } catch (e) {
       throw "Could not retrieve data for $selectedPostcode!";
     }

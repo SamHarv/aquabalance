@@ -157,7 +157,6 @@ class ResultsCalculator {
       monthlyRainfallData.forEach((month, rainfallValues) {
         if (rainfallValues.isNotEmpty) {
           rainfallValues.sort();
-          // print(rainfallValues.toString());
           monthlyStats[month] = {
             'min': rainfallValues.first,
             'median': calculateMedian(rainfallValues),

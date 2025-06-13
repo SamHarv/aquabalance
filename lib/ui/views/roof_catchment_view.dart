@@ -253,50 +253,53 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
                                       "Tank Summary",
                                       style: inputFieldStyle,
                                     ),
-                                    // Tank inventory
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: "Tank inventory: ",
-                                            style: GoogleFonts.openSans(
-                                              textStyle: const TextStyle(
-                                                color: black,
-                                                fontSize: 16,
+                                    Row(
+                                      spacing: 16,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "Tank inventory:",
+                                              style: GoogleFonts.openSans(
+                                                textStyle: const TextStyle(
+                                                  color: black,
+                                                  fontSize: 16,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          TextSpan(
-                                            text:
-                                                "${formatter.format(snapshot.data![0])}L",
-                                            style: subHeadingStyle,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    // Tank capacity
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: "Total capacity: ",
-                                            style: GoogleFonts.openSans(
-                                              textStyle: const TextStyle(
-                                                color: black,
-                                                fontSize: 16,
+                                            Text(
+                                              "Total capacity:",
+                                              style: GoogleFonts.openSans(
+                                                textStyle: const TextStyle(
+                                                  color: black,
+                                                  fontSize: 16,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          TextSpan(
-                                            text:
-                                                "${formatter.format(snapshot.data![1])}L",
-                                            style: subHeadingStyle,
-                                          ),
-                                        ],
-                                      ),
+                                          ],
+                                        ),
+                                        // Inv & capacity values
+                                        Column(
+                                          children: [
+                                            // Tank inventory
+                                            Text(
+                                              "${formatter.format(snapshot.data![0])}L",
+                                              style: subHeadingStyle,
+                                            ),
+                                            // Tank capacity
+                                            Text(
+                                              "${formatter.format(snapshot.data![1])}L",
+                                              style: subHeadingStyle,
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
+
                                 // Percent full
                                 Text(
                                   "${(snapshot.data![0] / snapshot.data![1] * 100).toStringAsFixed(0)}% full",
@@ -312,6 +315,8 @@ class _RoofCatchmentViewState extends State<RoofCatchmentView> {
                     }
                   },
                 ),
+
+                // Heading
                 ConstrainedWidthWidget(
                   child: Text(
                     "Roof Catchment & Other Intake",

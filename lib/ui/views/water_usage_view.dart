@@ -395,6 +395,8 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                             style: inputFieldStyle,
                           ),
                         ),
+
+                        // Info dialog to explain usage levels
                         IconButton(
                           tooltip: "Guide for per person water usage level",
 
@@ -408,48 +410,216 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                                 ),
                                 Row(
                                   children: [
-                                    Text("Low:", style: subHeadingStyle),
+                                    Text(
+                                      "Low Water Usage",
+                                      style: subHeadingStyle,
+                                    ),
                                   ],
                                 ),
-                                Text(
-                                  "• Households with efficient appliances.\n"
-                                  "• Infrequent and/or short showers.\n"
-                                  "• Minimal outdoor water use or highly efficient irrigation "
-                                  "systems.\n"
-                                  " Strong water conservation behaviors and awareness.\n",
-                                  style: GoogleFonts.openSans(
-                                    textStyle: TextStyle(fontSize: 14),
+                                SizedBox(height: 8),
+                                RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: "• Appliances: ",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            "You use efficient appliances (e.g. water-saving washing machines).\n",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: "• Showers: ",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            "You take showers infrequently and/or keep them very short.\n",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: "• Outdoor Use: ",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            "You use little water outside, or have very efficient irrigation systems.\n",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: "• Habits: ",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            "You are highly aware of water conservation and make an effort to save water.",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                Row(
-                                  children: [
-                                    Text("Avg:", style: subHeadingStyle),
-                                  ],
-                                ),
-                                Text(
-                                  "• Mix of efficient and standard appliances.\n"
-                                  "• Moderate outdoor water use for garden maintenance.\n"
-                                  "• Daily showers of 4 to 8 minutes.\n"
-                                  "• Some water conservation awareness but not consistently "
-                                  "applied.\n",
 
-                                  style: GoogleFonts.openSans(
-                                    textStyle: TextStyle(fontSize: 14),
+                                Row(
+                                  children: [
+                                    Text(
+                                      "\nAverage Water Usage",
+                                      style: subHeadingStyle,
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 8),
+                                RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: "• Appliances: ",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            "You have a mix of efficient and standard appliances.\n",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: "• Showers: ",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            "You take daily showers that last between 4 to 8 minutes.\n",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: "• Outdoor Use: ",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            "You use a moderate amount of water for garden or lawn maintenance.\n",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: "• Habits: ",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            "You know about water conservation, but don’t always put it into practice.",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 Row(
                                   children: [
-                                    Text("High:", style: subHeadingStyle),
+                                    Text(
+                                      "\nHigh Water Usage",
+                                      style: subHeadingStyle,
+                                    ),
                                   ],
                                 ),
-                                Text(
-                                  "• Large outdoor water use for gardens, pools, or extensive "
-                                  "irrigation.\n"
-                                  "• Older and less efficient appliances.\n"
-                                  "• Frequent and/or long showers.\n"
-                                  "• Regular baths.",
-                                  style: GoogleFonts.openSans(
-                                    textStyle: TextStyle(fontSize: 14),
+                                SizedBox(height: 8),
+                                RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: "• Appliances: ",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            "You use older or less efficient appliances.\n",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: "• Showers: ",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            "You take frequent and/or long showers, and may also take regular baths.\n",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: "• Outdoor Use: ",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            "You use a lot of water outside (e.g., watering large gardens, filling pools, or running extensive irrigation).\n",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: "• Habits: ",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            "Water conservation is not a regular practice.",
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -526,9 +696,7 @@ class _WaterUsageViewState extends State<WaterUsageView> {
                                     // keyboardType: TextInputType.number,
                                     inputFormatters: [
                                       FilteringTextInputFormatter.digitsOnly,
-                                      LengthLimitingTextInputFormatter(
-                                        4,
-                                      ), // Max 1500
+                                      LengthLimitingTextInputFormatter(4),
                                     ],
                                     decoration: InputDecoration(
                                       labelText:
